@@ -2,147 +2,178 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Instant GIF Roller</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebForge Playground</title>
+    <!-- Load Monaco Editor and Split.js for the "Cool" UI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #0f0f0f;
-            color: white;
-            font-family: -apple-system, system-ui, sans-serif;
-            overflow: hidden;
-        }
+        :root { --bg: #1e1e1e; --sidebar: #252526; --text: #cccccc; --accent: #007acc; }
+        body, html { margin: 0; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); }
+        
+        /* Layout */
+        .container { display: flex; height: 100vh; width: 100vw; }
+        .sidebar { width: 200px; background: var(--sidebar); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .editor-zone { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+        .preview-zone { width: 40%; background: white; border-left: 1px solid #333; display: flex; flex-direction: column; position: relative; }
 
-        #gif-container {
-            width: 90vw;
-            height: 60vh;
-            max-width: 600px;
-            background: #1a1a1a;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 3px solid #333;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
+        /* Sidebar & Tabs */
+        .sidebar-header { padding: 10px; font-size: 12px; text-transform: uppercase; opacity: 0.7; display: flex; justify-content: space-between; align-items: center; }
+        .file-list { flex-grow: 1; overflow-y: auto; }
+        .file-item { padding: 8px 15px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        .file-item:hover { background: #2a2d2e; }
+        .file-item.active { background: #37373d; color: white; border-left: 2px solid var(--accent); }
+        .add-btn { cursor: pointer; padding: 5px; }
 
-        img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
+        /* Toolbar */
+        .toolbar { height: 40px; background: #333; display: flex; align-items: center; padding: 0 10px; gap: 10px; }
+        .btn { background: var(--accent); color: white; border: none; padding: 5px 12px; cursor: pointer; border-radius: 3px; font-size: 13px; font-weight: bold; }
+        .btn:hover { background: #005a9e; }
+        .btn-fullscreen { position: absolute; bottom: 20px; right: 20px; z-index: 100; opacity: 0.5; }
+        .btn-fullscreen:hover { opacity: 1; }
 
-        .controls {
-            display: flex;
-            gap: 15px;
-        }
-
-        button {
-            padding: 18px 35px;
-            font-size: 20px;
-            font-weight: bold;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: transform 0.1s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .btn-roll {
-            background: linear-gradient(135deg, #ff0080, #7928ca);
-            color: white;
-            box-shadow: 0 4px 15px rgba(255, 0, 128, 0.4);
-        }
-
-        .btn-cat {
-            background: linear-gradient(135deg, #0070f3, #00dfd8);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0, 112, 243, 0.4);
-        }
-
-        button:active {
-            transform: scale(0.92);
-        }
-
-        #loading {
-            display: none;
-            font-size: 18px;
-            color: #888;
-        }
+        /* Editor & Preview */
+        #editor-container { flex-grow: 1; width: 100%; }
+        iframe { width: 100%; height: 100%; border: none; background: white; }
     </style>
 </head>
 <body>
 
-    <div id="gif-container">
-        <div id="placeholder">Tap a button to roll!</div>
-        <img id="gif-img" style="display:none;">
+<div class="container">
+    <!-- 1. File Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <span>Files</span>
+            <i class="fas fa-plus add-btn" onclick="addNewFile()" title="New File"></i>
+        </div>
+        <div id="file-list" class="file-list"></div>
     </div>
 
-    <div id="loading">Loading...</div>
-
-    <div class="controls">
-        <button class="btn-roll" onclick="rollAny()">ANY GIF</button>
-        <button class="btn-cat" onclick="rollCat()">RANDOM CAT</button>
+    <!-- 2. Code Editor Zone -->
+    <div class="editor-zone">
+        <div class="toolbar">
+            <span id="current-filename" style="font-size: 13px; flex-grow: 1;">index.html</span>
+            <button class="btn" onclick="runCode()"><i class="fas fa-play"></i> Run Game</button>
+        </div>
+        <div id="editor-container"></div>
     </div>
 
-    <script>
-        // A curated list of direct GIF links to ensure it works without an API
-        const gifLibrary = [
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxTQH991gk/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l41lTfuxV5l6pP50k/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/26gsjCZpPolPr3sBy/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKSjPjXGvH7a2yA/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l0HlSno8ZvgS2J6G4/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o6Zt481isf9KfXY9a/giphy.gif",
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJwamN3bm1yeGR3eXh6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3o7TKMGpxxTQH991gk/giphy.gif",
-            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXNoNjB5ZXR6dzh0dzZ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/sIIhZmxQX2fAY/giphy.gif",
-            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXNoNjB5ZXR6dzh0dzZ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/cuPm4A4pUR9o4/giphy.gif",
-            "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXNoNjB5ZXR6dzh0dzZ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6eXJ6JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/JIX9t2j0ZTN9S/giphy.gif"
-        ];
+    <!-- 3. Preview Zone -->
+    <div class="preview-zone" id="preview-zone">
+        <iframe id="preview-frame" sandbox="allow-scripts allow-modals allow-pointer-lock allow-same-origin"></iframe>
+        <button class="btn btn-fullscreen" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
+    </div>
+</div>
 
-        const img = document.getElementById('gif-img');
-        const placeholder = document.getElementById('placeholder');
-        const loading = document.getElementById('loading');
+<script>
+    // --- VIRTUAL FILE SYSTEM ---
+    let files = {
+        'index.html': { content: '<html>\n<head>\n <link rel="stylesheet" href="style.css">\n</head>\n<body>\n <h1>Hello World</h1>\n <canvas id="game"></canvas>\n <script src="app.js"><\/script>\n</body>\n</html>' },
+        'style.css': { content: 'body { background: #222; color: cyan; text-align: center; }\ncanvas { border: 1px solid white; width: 100%; height: 200px; }' },
+        'app.js': { content: 'console.log("Game running...");\nconst c = document.getElementById("game");\nconst ctx = c.getContext("2d");\nctx.fillStyle = "red";\nctx.fillRect(50, 50, 100, 100);' }
+    };
+    let activeFile = 'index.html';
+    let editor;
 
-        function showGif(url) {
-            placeholder.style.display = 'none';
-            img.style.display = 'none';
-            loading.style.display = 'block';
+    // --- MONACO SETUP ---
+    require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+    require(['vs/editor/editor.main'], function () {
+        editor = monaco.editor.create(document.getElementById('editor-container'), {
+            theme: 'vs-dark',
+            automaticLayout: true,
+            fontSize: 14,
+            minimap: { enabled: false }
+        });
 
-            // Create new image to handle loading
-            const newImg = new Image();
-            newImg.src = url;
-            newImg.onload = function() {
-                img.src = url;
-                img.style.display = 'block';
-                loading.style.display = 'none';
-            };
+        // Save changes to virtual FS on every keystroke
+        editor.onDidChangeModelContent(() => {
+            files[activeFile].content = editor.getValue();
+        });
+
+        switchFile('index.html');
+        updateFileList();
+    });
+
+    // --- LOGIC ---
+    function updateFileList() {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+        Object.keys(files).forEach(filename => {
+            const div = document.createElement('div');
+            div.className = `file-item ${filename === activeFile ? 'active' : ''}`;
+            div.innerHTML = `<i class="far fa-file-code"></i> ${filename}`;
+            div.onclick = () => switchFile(filename);
+            list.appendChild(div);
+        });
+    }
+
+    function switchFile(filename) {
+        activeFile = filename;
+        const extension = filename.split('.').pop();
+        const langMap = { html: 'html', js: 'javascript', css: 'css' };
+        
+        const model = monaco.editor.createModel(files[filename].content, langMap[extension] || 'text');
+        editor.setModel(model);
+        
+        document.getElementById('current-filename').innerText = filename;
+        updateFileList();
+    }
+
+    function addNewFile() {
+        const name = prompt("Enter filename (e.g. game.js):");
+        if (name && !files[name]) {
+            files[name] = { content: '' };
+            switchFile(name);
         }
+    }
 
-        // Rolls a random GIF from the hardcoded list
-        function rollAny() {
-            const randomIndex = Math.floor(Math.random() * gifLibrary.length);
-            showGif(gifLibrary[randomIndex]);
+    // --- THE "GATHERING" ENGINE ---
+    // This function finds relative links in the HTML and replaces them with the actual code
+    function runCode() {
+        let html = files['index.html'].content;
+
+        // 1. Inject CSS
+        Object.keys(files).forEach(name => {
+            if (name.endsWith('.css')) {
+                const cssContent = `<style>\n${files[name].content}\n</style>`;
+                // Replace <link href="name"> with <style>content</style>
+                const regex = new RegExp(`<link.*?href=["']${name}["'].*?>`, 'g');
+                if (html.match(regex)) {
+                    html = html.replace(regex, cssContent);
+                } else {
+                    html = html.replace('</head>', cssContent + '</head>');
+                }
+            }
+        });
+
+        // 2. Inject JS
+        Object.keys(files).forEach(name => {
+            if (name.endsWith('.js')) {
+                const jsContent = `<script>\n${files[name].content}\n<\/script>`;
+                const regex = new RegExp(`<script.*?src=["']${name}["'].*?><\/script>`, 'g');
+                if (html.match(regex)) {
+                    html = html.replace(regex, jsContent);
+                } else {
+                    html = html.replace('</body>', jsContent + '</body>');
+                }
+            }
+        });
+
+        const frame = document.getElementById('preview-frame');
+        frame.srcdoc = html;
+    }
+
+    function toggleFullscreen() {
+        const zone = document.getElementById('preview-zone');
+        if (!document.fullscreenElement) {
+            zone.requestFullscreen().catch(err => {
+                alert(`Error: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
         }
+    }
+</script>
 
-        // Fetches a fresh random cat GIF from Cataas (No API key needed)
-        function rollCat() {
-            // Adding a timestamp prevents the browser from caching the same cat
-            const catUrl = "https://cataas.com/cat/gif?t=" + new Date().getTime();
-            showGif(catUrl);
-        }
-
-        // Prevent iPad double-tap zoom
-        document.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 1) e.preventDefault();
-        }, { passive: false });
-    </script>
 </body>
 </html>
