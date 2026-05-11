@@ -3201,6 +3201,8 @@ const el = document.getElementById('menu-' + name);
 if (!el) return;
 const wasOpen = el.classList.contains('open');
 
+}
+
 function closeAllMenus() {
   document.querySelectorAll('.menu-item.open').forEach(el => el.classList.remove('open'));
 }
