@@ -1766,7 +1766,7 @@ function createFileItem(path, displayName) {
   div.className = 'file-item' + (path === state.activeFile ? ' active' : '') + (info.isImage ? ' is-image' : '');
   div.dataset.path = path;
 
-  let iconHtml = `<i class="fab ${info.icon.icon} file-icon" style="color:${info.icon.color}"></i>`;
+  let iconHtml = `<i class="fab ${info.icon.icon} file-icon" style="color:${info.icon. color}"></i>`;
   if (info.isImage && state.files[path]?.objectUrl) {
     iconHtml = `<img src="${state.files[path].objectUrl}" alt="">`;
   }
@@ -3270,21 +3270,20 @@ function _injectUI() {
     </div>`;
   document.body.appendChild(modal);
 
-  // ── Plugins menu in menubar ───────────
-  const menubar = document.querySelector('.menubar');
-  const settingsItem = Array.from(menubar.querySelectorAll('.menu-item')).find(el=>el.textContent.trim()==='Settings');
-  if (menubar && settingsItem) {
-    const menuEl = document.createElement('div');
-    menuEl.className='menu-item';
-    menuEl.id='menu-plugins';
-    menuEl.onclick=()=>toggleMenu('plugins');
-    menuEl.innerHTML=`Plugins <span id="plugin-badge" style="background:var(--accent);color:white;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;display:none">0</span>
-      <div class="dropdown" id="dropdown-plugins">
-        <div class="dropdown-item" onclick="openPluginManager()"><i class="fas fa-puzzle-piece"></i> Plugin Manager <kbd style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);background:var(--panel2);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">⌘⇧P</kbd></div>
-        <div class="dropdown-item" onclick="openPluginManager();pluginCreate()"><i class="fas fa-plus"></i> New Plugin</div>
-      </div>`;
-    menubar.insertBefore(menuEl, settingsItem);
-  }
+const menubar = document.querySelector('.menubar');
+if (menubar) {
+  const settingsItem = Array.from(menubar.querySelectorAll('.menu-item')).find(el=>el.childNodes[0]?.textContent.trim()==='Settings');
+  const menuEl = document.createElement('div');
+  menuEl.className='menu-item';
+  menuEl.id='menu-plugins';
+  menuEl.onclick=()=>toggleMenu('plugins');
+  menuEl.innerHTML=`Plugins <span id="plugin-badge" style="background:var(--accent);color:white;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;display:none">0</span>
+    <div class="dropdown" id="dropdown-plugins">
+      <div class="dropdown-item" onclick="openPluginManager()"><i class="fas fa-puzzle-piece"></i> Plugin Manager <kbd style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);background:var(--panel2);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">⌘⇧P</kbd></div>
+      <div class="dropdown-item" onclick="openPluginManager();pluginCreate()"><i class="fas fa-plus"></i> New Plugin</div>
+    </div>`;
+  settingsItem ? menubar.insertBefore(menuEl, settingsItem) : menubar.appendChild(menuEl);
+}
 
   // ── Keyboard shortcut ─────────────────
   document.addEventListener('keydown', e => {
