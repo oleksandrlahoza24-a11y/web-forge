@@ -128,6 +128,89 @@
       --border-bright: #4c566a;
     }
 
+
+
+
+    [data-theme="dracula"] {
+      --bg: #0d1117;
+      --sidebar: #161b22;
+      --panel: #1c2128;
+      --panel2: #22272e;
+      --text: #f8f8f2;
+      --text-dim: #6272a4;
+      --text-faint: #2a3040;
+      --accent: #bd93f9;
+      --accent-glow: rgba(189, 147, 249, 0.25);
+      --accent2: #ff79c6;
+      --border: #2a3040;
+      --border-bright: #3d4f6e;
+      --success: #50fa7b;
+      --warning: #ffb86c;
+      --danger: #ff5555;
+    }
+
+
+
+
+    [data-theme="pumpkin"] {
+      --bg: #100800;
+      --sidebar: #180d00;
+      --panel: #201200;
+      --panel2: #291800;
+      --text: #ffd59e;
+      --text-dim: #6b4010;
+      --text-faint: #3a1f00;
+      --accent: #ff6a00;
+      --accent-glow: rgba(255, 106, 0, 0.3);
+      --accent2: #ff9f45;
+      --border: #2e1500;
+      --border-bright: #4d2500;
+      --success: #a3e635;
+      --warning: #fbbf24;
+      --danger: #ef4444;
+    }
+
+
+
+
+    [data-theme="ocean"] {
+      --bg: #020c18;
+      --sidebar: #041020;
+      --panel: #071628;
+      --panel2: #0b1e34;
+      --text: #cce8ff;
+      --text-dim: #2d6080;
+      --text-faint: #0d2840;
+      --accent: #0ea5e9;
+      --accent-glow: rgba(14, 165, 233, 0.25);
+      --accent2: #38bdf8;
+      --border: #0d2840;
+      --border-bright: #1a4060;
+      --success: #34d399;
+      --warning: #fbbf24;
+    }
+
+
+
+
+    [data-theme="matrix"] {
+      --bg: #000300;
+      --sidebar: #000500;
+      --panel: #000800;
+      --panel2: #000d00;
+      --text: #00ff41;
+      --text-dim: #006616;
+      --text-faint: #002206;
+      --accent: #00ff41;
+      --accent-glow: rgba(0, 255, 65, 0.2);
+      --accent2: #00cc33;
+      --border: #001a00;
+      --border-bright: #003300;
+      --success: #00ff41;
+      --warning: #ffff00;
+      --danger: #ff0000;
+    }
+
     [data-theme="light"] {
       --bg: #f0f0f5;
       --sidebar: #e4e4ec;
@@ -1583,6 +1666,28 @@
     [data-theme="rose"] .statusbar {
       background: linear-gradient(90deg, #f43f5e, #ec4899);
     }
+
+    [data-theme="dracula"] .statusbar {
+      background: linear-gradient(90deg, #bd93f9, #ff79c6);
+    }
+
+    [data-theme="pumpkin"] .statusbar {
+      background: linear-gradient(90deg, #ff6a00, #ff9f45);
+    }
+
+    [data-theme="ocean"] .statusbar {
+      background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+    }
+
+    [data-theme="matrix"] .statusbar {
+      background: #000800;
+      border-top: 1px solid #00ff41;
+      color: #00ff41;
+    }
+
+    [data-theme="matrix"] .btn-primary {
+      box-shadow: 0 0 16px rgba(0, 255, 65, 0.4);
+    }
   </style>
 </head>
 
@@ -1777,6 +1882,9 @@
       <div class="statusbar-item"><span id="status-cursor">Ln 1, Col 1</span></div>
       <div class="statusbar-item"><span id="status-encoding">UTF-8</span></div>
       <div class="statusbar-item"><span id="status-files-count">2 files</span></div>
+      <div class="statusbar-item"><i class="fas fa-font" style="font-size:9px"></i>
+        <span id="status-words">0 words</span>
+      </div>
     </div>
   </div>
 
@@ -2192,6 +2300,8 @@ require(['vs/editor/editor.main'], function() {
     }
   });
 
+  const isIpad = /iPad|Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+
   editor = monaco.editor.create(document.getElementById('editor-container'), {
     value: '',
     language: 'html',
@@ -2228,7 +2338,109 @@ require(['vs/editor/editor.main'], function() {
     renderLineHighlight: 'gutter',
     padding: { top: 12, bottom: 12 },
     mouseWheelZoom: true,
+    // iPad touch improvements
+    fastScrollSensitivity: isIpad ? 3 : 5,
+    multiCursorModifier: 'ctrlCmd',
   });
+
+  // ── iPad Touch Selection Toolbar ──────────────────────────────
+  if (isIpad) {
+    const touchBar = document.createElement('div');
+    touchBar.id = 'ipad-touch-bar';
+    touchBar.style.cssText = `
+      position:fixed; bottom:32px; left:50%; transform:translateX(-50%);
+      display:none; align-items:center; gap:2px; z-index:500;
+      background:var(--panel); border:1px solid var(--border-bright);
+      border-radius:10px; padding:4px 6px;
+      box-shadow:0 8px 32px rgba(0,0,0,0.5);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+    `;
+
+    const tbActions = [
+      { label:'◀ Word', fn: () => editor.trigger('touch','cursorWordLeft',{}) },
+      { label:'Word ▶', fn: () => editor.trigger('touch','cursorWordRight',{}) },
+      { label:'Sel Word', fn: () => editor.trigger('touch','editor.action.smartSelect.expand',{}) },
+      { label:'Sel Line', fn: () => {
+        const pos = editor.getPosition();
+        const model = editor.getModel();
+        const lineLen = model.getLineLength(pos.lineNumber);
+        editor.setSelection({ startLineNumber: pos.lineNumber, startColumn: 1, endLineNumber: pos.lineNumber, endColumn: lineLen + 1 });
+      }},
+      { label:'Expand ＋', fn: () => editor.trigger('touch','editor.action.smartSelect.expand',{}) },
+      { label:'Shrink −', fn: () => editor.trigger('touch','editor.action.smartSelect.shrink',{}) },
+      { label:'Sel All', fn: () => editor.setSelection(editor.getModel().getFullModelRange()) },
+      { label:'Copy', fn: async () => {
+        const sel = editor.getSelection();
+        const text = sel && !sel.isEmpty() ? editor.getModel().getValueInRange(sel) : editor.getValue();
+        try { await navigator.clipboard.writeText(text); showToast('Copied!','success'); } catch(e) {}
+      }},
+      { label:'Cut', fn: async () => {
+        const sel = editor.getSelection();
+        if (!sel || sel.isEmpty()) return;
+        const text = editor.getModel().getValueInRange(sel);
+        try { await navigator.clipboard.writeText(text); } catch(e) {}
+        editor.executeEdits('touch', [{ range: sel, text: '' }]);
+      }},
+      { label:'Paste', fn: async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          const sel = editor.getSelection();
+          editor.executeEdits('touch', [{ range: sel, text }]);
+        } catch(e) { showToast('Paste: allow clipboard','warn'); }
+      }},
+      { label:'Undo', fn: () => editor.trigger('touch','undo',{}) },
+      { label:'Redo', fn: () => editor.trigger('touch','redo',{}) },
+    ];
+
+    tbActions.forEach(a => {
+      const btn = document.createElement('button');
+      btn.textContent = a.label;
+      btn.style.cssText = `
+        padding:6px 10px; border-radius:7px; border:1px solid var(--border);
+        background:var(--panel2); color:var(--text); cursor:pointer;
+        font-family:var(--font-ui); font-size:12px; font-weight:500;
+        white-space:nowrap; transition:all 0.12s; flex-shrink:0;
+        -webkit-tap-highlight-color:transparent;
+      `;
+      btn.addEventListener('touchstart', () => btn.style.background = 'var(--accent-glow)', { passive: true });
+      btn.addEventListener('touchend', () => { btn.style.background = 'var(--panel2)'; a.fn(); }, { passive: true });
+      touchBar.appendChild(btn);
+    });
+
+    // Dismiss button
+    const dismiss = document.createElement('button');
+    dismiss.innerHTML = '✕';
+    dismiss.style.cssText = `
+      padding:6px 8px; border-radius:7px; border:1px solid var(--border-bright);
+      background:transparent; color:var(--text-dim); cursor:pointer;
+      font-size:12px; margin-left:4px; flex-shrink:0;
+      -webkit-tap-highlight-color:transparent;
+    `;
+    dismiss.addEventListener('touchend', () => { touchBar.style.display = 'none'; }, { passive: true });
+    touchBar.appendChild(dismiss);
+
+    document.body.appendChild(touchBar);
+
+    // Show bar on editor tap/selection change
+    let touchBarTimer = null;
+    editor.onDidChangeCursorSelection(e => {
+      if (!e.selection.isEmpty()) {
+        touchBar.style.display = 'flex';
+      }
+    });
+
+    const editorDom = document.getElementById('editor-container');
+    editorDom.addEventListener('touchstart', () => {
+      clearTimeout(touchBarTimer);
+    }, { passive: true });
+
+    editorDom.addEventListener('touchend', () => {
+      touchBarTimer = setTimeout(() => {
+        touchBar.style.display = 'flex';
+      }, 300);
+    }, { passive: true });
+  }
 
   // Cursor position tracking
   editor.onDidChangeCursorPosition(e => {
@@ -2239,9 +2451,14 @@ require(['vs/editor/editor.main'], function() {
   // Content change tracking
   editor.onDidChangeModelContent(() => {
     if (!state.activeFile || state.files[state.activeFile]?.isImage) return;
-    state.files[state.activeFile].content = editor.getValue();
+    const val = editor.getValue();
+    state.files[state.activeFile].content = val;
     markTabModified(state.activeFile);
     saveState();
+    // Update word count
+    const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+    const wc = document.getElementById('status-words');
+    if (wc) wc.textContent = words + ' words';
     if (autoRun) {
       clearTimeout(autoRunTimer);
       autoRunTimer = setTimeout(runCode, autoRunDelay);
@@ -2371,6 +2588,7 @@ function createFileItem(path, displayName) {
     <span class="file-name">${displayName}</span>
     <div class="file-actions">
       <button onclick="openRenameModal('${path}');event.stopPropagation()" title="Rename"><i class="fas fa-pen"></i></button>
+      <button onclick="duplicateFile('${path}');event.stopPropagation()" title="Duplicate"><i class="fas fa-copy"></i></button>
       <button onclick="deleteFile('${path}');event.stopPropagation()" title="Delete" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
     </div>
   `;
@@ -2543,6 +2761,23 @@ function deleteFile(path) {
   closeTab(path);
   renderFileTree();
   showToast(`Deleted ${path.split('/').pop()}`, 'success');
+  saveState();
+}
+
+function duplicateFile(path) {
+  const file = state.files[path];
+  if (!file) return;
+  const parts = path.split('.');
+  const ext = parts.length > 1 ? '.' + parts.pop() : '';
+  const base = parts.join('.');
+  let newPath = base + '-copy' + ext;
+  let i = 2;
+  while (state.files[newPath]) { newPath = base + '-copy' + i + ext; i++; }
+  state.files[newPath] = { ...file, content: file.content };
+  if (!state.openTabs.includes(newPath)) state.openTabs.push(newPath);
+  renderFileTree();
+  switchFile(newPath);
+  showToast(`Duplicated as ${newPath.split('/').pop()}`, 'success');
   saveState();
 }
 
@@ -2806,6 +3041,10 @@ const THEMES = {
   solarized: { bg:'#002b36', sidebar:'#00212b', accent:'#268bd2', label:'Solarized' },
   rose:      { bg:'#0f0608', sidebar:'#130a0c', accent:'#f43f5e', label:'Rose' },
   nord:      { bg:'#2e3440', sidebar:'#272c36', accent:'#88c0d0', label:'Nord' },
+  dracula:   { bg:'#0d1117', sidebar:'#161b22', accent:'#bd93f9', label:'Dracula' },
+  pumpkin:   { bg:'#100800', sidebar:'#180d00', accent:'#ff6a00', label:'Pumpkin' },
+  ocean:     { bg:'#020c18', sidebar:'#041020', accent:'#0ea5e9', label:'Ocean' },
+  matrix:    { bg:'#000300', sidebar:'#000500', accent:'#00ff41', label:'Matrix' },
   light:     { bg:'#f0f0f5', sidebar:'#e4e4ec', accent:'#6366f1', label:'Light' },
 };
 
@@ -3120,6 +3359,11 @@ const COMMANDS = [
   { label: 'Theme: Cyberpunk', icon: 'fa-bolt', fn: () => { applyTheme('cyberpunk'); buildThemeGrid(); } },
   { label: 'Theme: Aurora', icon: 'fa-star', fn: () => { applyTheme('aurora'); buildThemeGrid(); } },
   { label: 'Theme: Nord', icon: 'fa-snowflake', fn: () => { applyTheme('nord'); buildThemeGrid(); } },
+  { label: 'Theme: Dracula', icon: 'fa-moon', fn: () => { applyTheme('dracula'); buildThemeGrid(); } },
+  { label: 'Theme: Pumpkin', icon: 'fa-fire', fn: () => { applyTheme('pumpkin'); buildThemeGrid(); } },
+  { label: 'Theme: Ocean', icon: 'fa-water', fn: () => { applyTheme('ocean'); buildThemeGrid(); } },
+  { label: 'Theme: Matrix', icon: 'fa-terminal', fn: () => { applyTheme('matrix'); buildThemeGrid(); } },
+  { label: 'Duplicate File', desc: 'Duplicate the active file', icon: 'fa-copy', fn: () => { if (state.activeFile) duplicateFile(state.activeFile); } },
 ];
 
 let filteredCommands = [...COMMANDS];
@@ -3239,6 +3483,17 @@ document.addEventListener('keydown', e => {
   if (mod && e.key === 'n') { e.preventDefault(); openNewFileModal(); }
   if (mod && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
   if (mod && e.shiftKey && e.key === 'F') { e.preventDefault(); formatCode(); }
+  // Tab cycling: Ctrl/Cmd + Tab / Shift+Tab
+  if (mod && e.key === 'Tab') {
+    e.preventDefault();
+    const tabs = state.openTabs.filter(t => state.files[t]);
+    if (tabs.length < 2) return;
+    const idx = tabs.indexOf(state.activeFile);
+    const next = e.shiftKey
+      ? tabs[(idx - 1 + tabs.length) % tabs.length]
+      : tabs[(idx + 1) % tabs.length];
+    switchFile(next);
+  }
   if (e.key === 'Escape') {
     closePalette();
     closeSettings();
@@ -3247,6 +3502,13 @@ document.addEventListener('keydown', e => {
     closeModal('rename-modal');
     closeAllMenus();
   }
+});
+
+// Close modals on backdrop click (bug fix)
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
 });
 
 // ═══════════════════════════════════════
@@ -3285,6 +3547,294 @@ function buildTemplateGrid() {
 }
 
 // ═══════════════════════════════════════
+// CSS VARIABLES INSPECTOR
+// ═══════════════════════════════════════
+(function initCSSVarInspector() {
+  // Inject the panel CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    #cssvar-panel {
+      border-top: 1px solid var(--border);
+      background: var(--panel);
+      flex-shrink: 0;
+      display: none;
+      flex-direction: column;
+      max-height: 220px;
+      overflow: hidden;
+    }
+    #cssvar-panel.open { display: flex; }
+    #cssvar-panel-header {
+      height: 28px; display: flex; align-items: center; padding: 0 10px;
+      gap: 8px; border-bottom: 1px solid var(--border);
+      font-size: 11px; color: var(--text-dim); flex-shrink: 0; cursor: default;
+    }
+    #cssvar-list {
+      flex: 1; overflow-y: auto; padding: 6px 10px; display: flex;
+      flex-direction: column; gap: 5px;
+    }
+    #cssvar-list::-webkit-scrollbar { width: 4px; }
+    #cssvar-list::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 2px; }
+    .cssvar-row {
+      display: flex; align-items: center; gap: 8px; min-height: 26px;
+    }
+    .cssvar-name {
+      font-family: var(--font-mono); font-size: 10px; color: var(--accent2);
+      min-width: 130px; max-width: 130px; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; cursor: default;
+    }
+    .cssvar-val {
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+      min-width: 80px;
+    }
+    .cssvar-color-swatch {
+      width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border-bright);
+      cursor: pointer; flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .cssvar-color-swatch input[type=color] {
+      position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+      opacity: 0; cursor: pointer; border: none; padding: 0;
+    }
+    .cssvar-slider { flex: 1; min-width: 80px; accent-color: var(--accent); height: 4px; cursor: pointer; }
+    .cssvar-number { width: 46px; background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--font-mono); font-size: 10px; padding: 2px 4px; text-align: right; }
+    .cssvar-text { flex: 1; background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: var(--font-mono); font-size: 10px; padding: 2px 5px; }
+    #cssvar-empty { font-size: 11px; color: var(--text-faint); padding: 8px 0; }
+  `;
+  document.head.appendChild(style);
+
+  // Build the panel DOM
+  const panel = document.createElement('div');
+  panel.id = 'cssvar-panel';
+  panel.innerHTML = `
+    <div id="cssvar-panel-header">
+      <i class="fas fa-sliders-h" style="color:var(--accent);font-size:11px"></i>
+      <span style="font-weight:600;color:var(--text)">CSS Variables</span>
+      <span id="cssvar-count" style="font-size:10px"></span>
+      <span style="margin-left:auto;display:flex;gap:6px">
+        <button class="icon-btn" id="cssvar-apply-btn" title="Apply changes to file" onclick="cssVarApplyAll()"><i class="fas fa-check" style="color:var(--success)"></i></button>
+        <button class="icon-btn" onclick="document.getElementById('cssvar-panel').classList.remove('open')" title="Close"><i class="fas fa-times"></i></button>
+      </span>
+    </div>
+    <div id="cssvar-list"><div id="cssvar-empty">Open a CSS file to inspect variables.</div></div>
+  `;
+
+  // Insert above the console panel (inside main-content)
+  const consolePanelEl = document.getElementById('console-panel');
+  consolePanelEl.parentNode.insertBefore(panel, consolePanelEl);
+
+  // Track overrides: varName → overrideValue
+  const cssVarOverrides = {};
+  let cssVarCurrentFile = null;
+  let cssVarParsed = [];
+
+  function _parseVars(css) {
+    const re = /(--[\w-]+)\s*:\s*([^;}{]+)/g;
+    const found = [];
+    const seen = new Set();
+    let m;
+    while ((m = re.exec(css)) !== null) {
+      const name = m[1].trim();
+      const val = m[2].trim();
+      if (!seen.has(name)) { seen.add(name); found.push({ name, val }); }
+    }
+    return found;
+  }
+
+  function _isColor(v) {
+    return /^#[0-9a-fA-F]{3,8}$/.test(v) || /^rgba?\(/.test(v) || /^hsl/.test(v) || /^(red|blue|green|white|black|transparent|inherit|currentColor)$/.test(v);
+  }
+
+  function _isNumeric(v) {
+    return /^-?[\d.]+(%|px|em|rem|vh|vw|deg|s|ms)?$/.test(v);
+  }
+
+  function _parseNumVal(v) {
+    const m = v.match(/^(-?[\d.]+)(.*)/);
+    return m ? { num: parseFloat(m[1]), unit: m[2] } : null;
+  }
+
+  function _toHex(css) {
+    // quick rgba→hex approximation for color input
+    const m = css.match(/rgba?\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)/);
+    if (m) {
+      return '#' + [m[1],m[2],m[3]].map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
+    }
+    if (/^#[0-9a-fA-F]{3,8}$/.test(css)) return css.slice(0,7);
+    return '#888888';
+  }
+
+  function renderCSSVars(vars) {
+    const list = document.getElementById('cssvar-list');
+    const emptyEl = document.getElementById('cssvar-empty');
+    list.innerHTML = '';
+    document.getElementById('cssvar-count').textContent = vars.length ? `${vars.length} vars` : '';
+
+    if (!vars.length) {
+      list.appendChild(Object.assign(document.createElement('div'), { id:'cssvar-empty', textContent:'No CSS variables found in this file.' }));
+      return;
+    }
+
+    vars.forEach(({ name, val }) => {
+      const row = document.createElement('div');
+      row.className = 'cssvar-row';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'cssvar-name';
+      nameEl.title = name;
+      nameEl.textContent = name;
+
+      let control;
+      const currentVal = cssVarOverrides[name] || val;
+
+      if (_isColor(currentVal)) {
+        const swatch = document.createElement('div');
+        swatch.className = 'cssvar-color-swatch';
+        swatch.style.background = currentVal;
+        const inp = document.createElement('input');
+        inp.type = 'color';
+        try { inp.value = _toHex(currentVal); } catch(e) { inp.value = '#888888'; }
+        inp.addEventListener('input', () => {
+          cssVarOverrides[name] = inp.value;
+          swatch.style.background = inp.value;
+          _applyOverridesToPreview();
+          valEl.textContent = inp.value;
+        });
+        swatch.appendChild(inp);
+        control = swatch;
+      } else if (_isNumeric(currentVal)) {
+        const parsed = _parseNumVal(currentVal);
+        if (parsed) {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;align-items:center;gap:6px;flex:1';
+          const slider = document.createElement('input');
+          slider.type = 'range';
+          slider.className = 'cssvar-slider';
+          const absVal = Math.abs(parsed.num);
+          const max = absVal <= 1 ? 2 : absVal <= 100 ? 200 : absVal <= 1000 ? 2000 : 5000;
+          slider.min = parsed.num < 0 ? -max : 0;
+          slider.max = max;
+          slider.step = parsed.unit === '' || parsed.unit === 'px' ? 1 : 0.01;
+          slider.value = parsed.num;
+          const numInp = document.createElement('input');
+          numInp.type = 'number';
+          numInp.className = 'cssvar-number';
+          numInp.value = parsed.num;
+          const update = (v) => {
+            const newVal = v + parsed.unit;
+            cssVarOverrides[name] = newVal;
+            slider.value = v;
+            numInp.value = v;
+            _applyOverridesToPreview();
+            valEl.textContent = newVal;
+          };
+          slider.addEventListener('input', () => update(parseFloat(slider.value)));
+          numInp.addEventListener('change', () => update(parseFloat(numInp.value)));
+          wrap.appendChild(slider);
+          wrap.appendChild(numInp);
+          control = wrap;
+        }
+      }
+
+      if (!control) {
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'cssvar-text';
+        inp.value = currentVal;
+        inp.addEventListener('change', () => {
+          cssVarOverrides[name] = inp.value;
+          _applyOverridesToPreview();
+          valEl.textContent = inp.value;
+        });
+        control = inp;
+      }
+
+      const valEl = document.createElement('div');
+      valEl.className = 'cssvar-val';
+      valEl.textContent = currentVal;
+
+      row.appendChild(nameEl);
+      if (control) row.appendChild(control);
+      row.appendChild(valEl);
+      list.appendChild(row);
+    });
+  }
+
+  function _applyOverridesToPreview() {
+    // Inject an override <style> block into the preview frame
+    if (!Object.keys(cssVarOverrides).length) return;
+    let overrideCSS = ':root{';
+    Object.entries(cssVarOverrides).forEach(([k,v]) => { overrideCSS += `${k}:${v};`; });
+    overrideCSS += '}';
+    const frame = document.getElementById('preview-frame');
+    try {
+      const doc = frame.contentDocument || frame.contentWindow?.document;
+      if (!doc) return;
+      let el = doc.getElementById('__cssvar_override__');
+      if (!el) { el = doc.createElement('style'); el.id = '__cssvar_override__'; doc.head.appendChild(el); }
+      el.textContent = overrideCSS;
+    } catch(e) {}
+  }
+
+  window.cssVarApplyAll = function() {
+    if (!cssVarCurrentFile || !Object.keys(cssVarOverrides).length) { showToast('No changes to apply','warn'); return; }
+    let content = editor.getValue();
+    Object.entries(cssVarOverrides).forEach(([name, newVal]) => {
+      const re = new RegExp('(' + name.replace(/[-]/g,'\\-') + '\\s*:\\s*)([^;}{]+)', 'g');
+      content = content.replace(re, (_, prefix) => prefix + newVal);
+    });
+    editor.setValue(content);
+    showToast('Variables written to file ✓', 'success');
+  };
+
+  window.openCSSVarInspector = function() {
+    panel.classList.toggle('open');
+    if (panel.classList.contains('open')) refreshCSSVarPanel();
+  };
+
+  function refreshCSSVarPanel() {
+    if (!editor) return;
+    const file = state.activeFile || '';
+    cssVarCurrentFile = file;
+    const content = editor.getValue();
+    cssVarParsed = _parseVars(content);
+    renderCSSVars(cssVarParsed);
+  }
+
+  // Auto-refresh when switching files or content changes
+  const _origSwitchFile = window.switchFile;
+  window._cssvarSwitchHook = function(path) {
+    if (panel.classList.contains('open')) {
+      setTimeout(refreshCSSVarPanel, 120);
+    }
+  };
+
+  // Hook into editor content changes
+  setTimeout(() => {
+    if (editor) {
+      editor.onDidChangeModelContent(() => {
+        if (panel.classList.contains('open')) {
+          clearTimeout(window._cssvarDebounce);
+          window._cssvarDebounce = setTimeout(refreshCSSVarPanel, 600);
+        }
+      });
+    }
+  }, 2000);
+
+  // Add toolbar button
+  const toolbarEl = document.querySelector('.toolbar');
+  if (toolbarEl) {
+    const sep = document.createElement('div');
+    sep.className = 'toolbar-sep';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost';
+    btn.title = 'CSS Variables Inspector';
+    btn.innerHTML = '<i class="fas fa-sliders-h"></i> Vars';
+    btn.onclick = () => window.openCSSVarInspector();
+    toolbarEl.insertBefore(sep, toolbarEl.querySelector('.lang-badge'));
+    toolbarEl.insertBefore(btn, toolbarEl.querySelector('.lang-badge'));
+  }
+})();
+
+// ═══════════════════════════════════════
 // TOASTS
 // ═══════════════════════════════════════
 function showToast(msg, type = 'success') {
@@ -3304,7 +3854,7 @@ function showToast(msg, type = 'success') {
   </script>
   <script>
     // ═══════════════════════════════════════
-// WebForge Pro — Plugin System (plugins.js)
+// WebForge Pro — Stubs (plugins removed)
 // ═══════════════════════════════════════
 
 const PLUGIN_KEY = 'webforge_plugins_v1';
@@ -3823,27 +4373,9 @@ function pluginDelete() {
 }
 
 // ════════════════════════════════════════
-// BOOT
+// PLUGINS REMOVED — stub belo
 // ════════════════════════════════════════
-(function boot() {
-  pluginLoad();
-
-  // Inject Plugin Manager modal + Plugins menu into the page
-  _injectUI();
-
-  // Wait for Monaco + state to be ready, then run plugins
-  const tryRun = () => {
-    if (window.monaco && window.editor && window.state) {
-      _patchRunCode();
-      pluginRunAll();
-    } else {
-      setTimeout(tryRun, 250);
-    }
-  };
-  tryRun();
-})();
-
-function _injectUI() {
+function _injectUI_REMOVED() {
   // ── Plugin Manager Modal ──────────────
   const modal = document.createElement('div');
   modal.id = 'pm-modal';
