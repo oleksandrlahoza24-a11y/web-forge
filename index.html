@@ -142,10 +142,95 @@
       --border: #d0d0e0;
       --border-bright: #b0b0cc;
       --preview-bg: #f8f8fc;
-    }
+    }
 
-    /* ═══════════════════════════════════════════
-   BASE RESET
+
+
+
+    [data-theme="dracula"] {
+      --bg: #282a36;
+      --sidebar: #21222c;
+      --panel: #2d2f3f;
+      --panel2: #343746;
+      --text: #f8f8f2;
+      --text-dim: #7970a9;
+      --text-faint: #44475a;
+      --accent: #bd93f9;
+      --accent-glow: rgba(189, 147, 249, 0.25);
+      --accent2: #ff79c6;
+      --border: #3d3f54;
+      --border-bright: #565875;
+      --success: #50fa7b;
+      --warning: #ffb86c;
+      --danger: #ff5555;
+    }
+
+
+
+
+    [data-theme="mocha"] {
+      --bg: #1c1410;
+      --sidebar: #161210;
+      --panel: #231a14;
+      --panel2: #2a2018;
+      --text: #e8d5b0;
+      --text-dim: #7a6248;
+      --text-faint: #3a2a1a;
+      --accent: #d4845a;
+      --accent-glow: rgba(212, 132, 90, 0.25);
+      --accent2: #e8a87c;
+      --border: #3a2a1a;
+      --border-bright: #5a3e28;
+      --success: #8fbf6a;
+      --warning: #e8c36a;
+    }
+
+
+
+
+    [data-theme="forest"] {
+      --bg: #0d1a0e;
+      --sidebar: #0a1508;
+      --panel: #111f12;
+      --panel2: #162618;
+      --text: #c8e6c0;
+      --text-dim: #4a7a48;
+      --text-faint: #1e3a1c;
+      --accent: #4caf50;
+      --accent-glow: rgba(76, 175, 80, 0.2);
+      --accent2: #81c784;
+      --border: #1e3a1c;
+      --border-bright: #2e5a2c;
+      --success: #69f070;
+      --warning: #c6d44a;
+    }
+
+
+
+
+    [data-theme="candy"] {
+      --bg: #1a0e24;
+      --sidebar: #140a1e;
+      --panel: #21102e;
+      --panel2: #2a1638;
+      --text: #f0d8ff;
+      --text-dim: #8a5aaa;
+      --text-faint: #3a1a50;
+      --accent: #e879f9;
+      --accent-glow: rgba(232, 121, 249, 0.25);
+      --accent2: #38bdf8;
+      --border: #3a1a50;
+      --border-bright: #5a2a78;
+      --success: #86efac;
+      --warning: #fde68a;
+      --danger: #ff79c6;
+    }
+
+
+
+
+    /* ═══════════════════════════════════════════
+   BASE RESET
 ═══════════════════════════════════════════ */
     *,
     *::before,
@@ -1583,6 +1668,85 @@
     [data-theme="rose"] .statusbar {
       background: linear-gradient(90deg, #f43f5e, #ec4899);
     }
+
+    [data-theme="dracula"] .statusbar {
+      background: linear-gradient(90deg, #bd93f9, #ff79c6);
+    }
+
+    [data-theme="mocha"] .statusbar {
+      background: linear-gradient(90deg, #d4845a, #c2643a);
+    }
+
+    [data-theme="forest"] .statusbar {
+      background: linear-gradient(90deg, #4caf50, #2e7d32);
+    }
+
+    [data-theme="candy"] .statusbar {
+      background: linear-gradient(90deg, #e879f9, #38bdf8);
+    }
+
+    .focus-mode .tab-bar,
+    .focus-mode .toolbar,
+    .focus-mode .sidebar,
+    .focus-mode .statusbar,
+    .focus-mode #split-divider,
+    .focus-mode .preview-panel {
+      display: none !important;
+    }
+
+    .focus-mode .menubar {
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .focus-mode .menubar:hover {
+      opacity: 1;
+    }
+
+    .focus-mode-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      z-index: 9999;
+      pointer-events: none;
+      display: none;
+    }
+
+    .focus-mode .focus-mode-bar {
+      display: block;
+    }
+
+    .focus-exit-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel);
+      border: 1px solid var(--border-bright);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-ui);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s;
+      z-index: 9998;
+    }
+
+    .focus-mode .focus-exit-hint {
+      opacity: 1;
+      animation: fadeHint 3s ease 0.5s forwards;
+    }
+
+    @keyframes fadeHint {
+      0% { opacity: 1; }
+      60% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 
@@ -1655,13 +1819,16 @@
         </div>
       </div>
       <div class="menu-item" id="menu-plugins" onclick="toggleMenu('plugins')">
-  Plugins <span id="plugin-badge" style="background:var(--accent);color:white;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;display:none">0</span>
-  <div class="dropdown" id="dropdown-plugins">
-    <div class="dropdown-item" onclick="openPluginManager()"><i class="fas fa-puzzle-piece"></i> Plugin Manager</div>
-    <div class="dropdown-item" onclick="openPluginManager();pluginCreate()"><i class="fas fa-plus"></i> New Plugin</div>
-  </div>
-</div>
-<div class="menu-item" id="menu-settings" onclick="openSettings()">Settings</div>
+          Plugins
+        <span id="plugin-badge" style="background:var(--accent);color:white;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;display:none">0</span>
+          <div class="dropdown" id="dropdown-plugins">
+              <div class="dropdown-item" onclick="openPluginManager()"><i class="fas fa-puzzle-piece"></i> Plugin
+            Manager</div>
+              <div class="dropdown-item" onclick="openPluginManager();pluginCreate()"><i class="fas fa-plus"></i> New
+            Plugin</div>
+            </div>
+      </div>
+      <div class="menu-item" id="menu-settings" onclick="openSettings()">Settings</div>
       <div class="menu-spacer"></div>
       <div class="menubar-right">
         <div class="fps-badge" id="fps-badge">60 FPS</div>
@@ -1862,6 +2029,13 @@
           </div>
           <button class="toggle" id="toggle-crt" onclick="toggleEffect('crt', this)"></button>
         </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Focus Mode</div>
+            <div class="setting-desc">Hide UI for distraction-free editing (⌘⇧Z)</div>
+          </div>
+          <button class="toggle" id="toggle-focus" onclick="toggleFocusMode()"></button>
+        </div>
       </div>
 
       <div class="settings-group">
@@ -1973,6 +2147,10 @@
 
   <!-- Toast container -->
   <div class="toast-container" id="toast-container"></div>
+
+  <!-- Focus mode overlays -->
+  <div class="focus-mode-bar"></div>
+  <div class="focus-exit-hint">Press ⌘⇧Z to exit Focus Mode</div>
 
   <!-- ════════════════════════════════════════
      JAVASCRIPT ENGINE
@@ -2804,7 +2982,10 @@ const THEMES = {
   rose:      { bg:'#0f0608', sidebar:'#130a0c', accent:'#f43f5e', label:'Rose' },
   nord:      { bg:'#2e3440', sidebar:'#272c36', accent:'#88c0d0', label:'Nord' },
   light:     { bg:'#f0f0f5', sidebar:'#e4e4ec', accent:'#6366f1', label:'Light' },
-};
+  dracula:   { bg:'#282a36', sidebar:'#21222c', accent:'#bd93f9', label:'Dracula'},
+  mocha:     { bg:'#1c1410', sidebar:'#161210', accent:'#d4845a', label:'Mocha' }, 
+  forest:    { bg:'#0d1a0e', sidebar:'#0a1508',accent:'#4caf50', label:'Forest' }, 
+  candy:     { bg:'#1a0e24', sidebar:'#140a1e', accent:'#e879f9', label:'Candy' }, };
 
 function buildThemeGrid() {
   const grid = document.getElementById('theme-grid');
@@ -2903,6 +3084,18 @@ function toggleEffect(name, btn) {
   state.settings.effects[name] = on;
   document.getElementById('app').classList.toggle('effect-' + name, on);
   saveState();
+}
+
+function toggleFocusMode() {
+  const app = document.getElementById('app');
+  const on = app.classList.toggle('focus-mode');
+  const btn = document.getElementById('toggle-focus');
+  if (btn) btn.classList.toggle('on', on);
+  if (on) {
+    showToast('Focus Mode on — hover menubar or press ⌘⇧Z to exit', 'info');
+  } else {
+    showToast('Focus Mode off', 'success');
+  }
 }
 
 function toggleAutoRun(btn) {
@@ -3236,6 +3429,7 @@ document.addEventListener('keydown', e => {
   if (mod && e.key === 'n') { e.preventDefault(); openNewFileModal(); }
   if (mod && e.key === 's') { e.preventDefault(); saveCurrentFile(); }
   if (mod && e.shiftKey && e.key === 'F') { e.preventDefault(); formatCode(); }
+  if (mod && e.shiftKey && e.key === 'Z') { e.preventDefault(); toggleFocusMode(); }
   if (e.key === 'Escape') {
     closePalette();
     closeSettings();
@@ -3439,6 +3633,21 @@ function buildAPI(id) {
       _rebuildTemplateGrid();
     },
 
+    // ── Plugin dropdown menu item ─────────
+    addPluginMenuItem(label, icon, cb) {
+      const extra = document.getElementById('dropdown-plugins-extra');
+      const sep = document.getElementById('dropdown-plugins-extra-sep');
+      if (!extra) return;
+      sep && (sep.style.display = 'block');
+      const item = document.createElement('div');
+      item.className = 'dropdown-item';
+      item.innerHTML = `<i class="fas ${icon || 'fa-puzzle-piece'}"></i> ${label}`;
+      item.onclick = cb;
+      extra.appendChild(item);
+      if (!_pluginMenuItems[id]) _pluginMenuItems[id] = [];
+      _pluginMenuItems[id].push(item);
+    },
+
     // ── Notifications ─────────────────────
     notify(msg, type='success') { showToast(msg, type); },
 
@@ -3583,6 +3792,46 @@ function pluginLoad() {
 // ════════════════════════════════════════
 // BADGE
 // ════════════════════════════════════════
+function _renderPluginDropdown() {
+  const list = document.getElementById('dropdown-plugins-list');
+  const empty = document.getElementById('dropdown-plugins-empty');
+  if (!list) return;
+  list.innerHTML = '';
+  const ids = Object.keys(pluginState.plugins);
+  if (ids.length === 0) {
+    empty && (empty.style.display = 'block');
+  } else {
+    empty && (empty.style.display = 'none');
+    ids.forEach(id => {
+      const p = pluginState.plugins[id];
+      const row = document.createElement('div');
+      row.className = 'dropdown-item';
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 12px;';
+      row.innerHTML = `
+        <i class="fas fa-puzzle-piece" style="color:${p.enabled ? 'var(--accent)' : 'var(--text-faint)'}"></i>
+        <span style="flex:1;font-size:12px;color:${p.enabled ? 'var(--text)' : 'var(--text-dim)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.name}">${p.name}</span>
+        <button onclick="event.stopPropagation();_quickTogglePlugin('${id}')" style="background:${p.enabled ? 'var(--accent)' : 'var(--border-bright)'};border:none;border-radius:10px;width:28px;height:16px;cursor:pointer;position:relative;flex-shrink:0;transition:background .18s">
+          <span style="position:absolute;width:10px;height:10px;background:white;border-radius:50%;top:3px;left:${p.enabled ? '15px' : '3px'};transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.3)"></span>
+        </button>
+        <button onclick="event.stopPropagation();_selectPlugin('${id}');openPluginManager()" style="background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:10px;padding:2px 4px;border-radius:3px" title="Edit"><i class="fas fa-pen"></i></button>
+      `;
+      list.appendChild(row);
+    });
+  }
+}
+
+function _quickTogglePlugin(id) {
+  if (!pluginState.plugins[id]) return;
+  pluginState.plugins[id].enabled = !pluginState.plugins[id].enabled;
+  pluginSave();
+  if (pluginState.plugins[id].enabled) pluginRun(id);
+  else pluginCleanup(id);
+  _renderPluginDropdown();
+  _renderPluginList();
+  _updatePluginBadge();
+  showToast(pluginState.plugins[id].name + (pluginState.plugins[id].enabled ? ' enabled' : ' disabled'), pluginState.plugins[id].enabled ? 'success' : 'warn');
+}
+
 function _updatePluginBadge() {
   const n = Object.values(pluginState.plugins).filter(p=>p.enabled).length;
   const b = document.getElementById('plugin-badge');
@@ -3627,6 +3876,7 @@ function _initPluginMonaco() {
 }
 
 function _renderPluginList() {
+  _renderPluginDropdown();
   const el = document.getElementById('pm-list');
   el.innerHTML='';
   const ids = Object.keys(pluginState.plugins);
@@ -3843,6 +4093,7 @@ function _injectUI() {
                 <code style="color:var(--accent2)">WebForge.addToolbarButton(label, icon, cb)</code> — add a toolbar button<br>
                 <code style="color:var(--accent2)">WebForge.addSidebarPanel(title, html)</code> — add a sidebar panel<br>
                 <code style="color:var(--accent2)">WebForge.addViewMenuItem(label, icon, cb)</code> — add item to View menu<br>
+                <code style="color:var(--accent2)">WebForge.addPluginMenuItem(label, icon, cb)</code> — add item to Plugins menu<br>
                 <code style="color:var(--accent2)">WebForge.addCommand(label, desc, icon, cb)</code> — add to command palette<br>
                 <code style="color:var(--accent2)">WebForge.onRun(cb)</code> — hook into preview (cb(html)→html)<br>
                 <code style="color:var(--accent2)">WebForge.injectCSS(css)</code> — inject CSS into the app<br>
@@ -3863,22 +4114,17 @@ function _injectUI() {
     </div>`;
   document.body.appendChild(modal);
 
-  // ── Plugins menu in menubar ───────────
-  const menubar = document.querySelector('.menubar');
-  if (menubar) {
-  const settingsItem =
-  Array.from(menubar.querySelectorAll('.menu-item')).find(el=>el.textContent.trim().startsWith('Settings'));
-    const menuEl = document.createElement('div');
-    menuEl.className='menu-item';
-    menuEl.id='menu-plugins';
-    menuEl.onclick=()=>toggleMenu('plugins');
-    menuEl.innerHTML=`Plugins <span id="plugin-badge" style="background:var(--accent);color:white;font-size:9px;padding:1px 5px;border-radius:10px;margin-left:3px;display:none">0</span>
-      <div class="dropdown" id="dropdown-plugins">
-        <div class="dropdown-item" onclick="openPluginManager()"><i class="fas fa-puzzle-piece"></i> Plugin Manager <kbd style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--text-dim);background:var(--panel2);padding:1px 5px;border-radius:3px;border:1px solid var(--border)">⌘⇧P</kbd></div>
-        <div class="dropdown-item" onclick="openPluginManager();pluginCreate()"><i class="fas fa-plus"></i> New Plugin</div>
-      </div>`;
-      settingsItem ? menubar.insertBefore(menuEl, settingsItem) : menubar.appendChild(menuEl);
-      }
+  // ── Plugins dropdown live refresh ─────
+  // The #menu-plugins element already exists in the HTML.
+  // We hook the menu open to always refresh it.
+  const pluginsMenuEl = document.getElementById('menu-plugins');
+  if (pluginsMenuEl) {
+    const _origOnclick = pluginsMenuEl.onclick;
+    pluginsMenuEl.onclick = () => {
+      _renderPluginDropdown();
+      _origOnclick && _origOnclick();
+    };
+  }
 
   // ── Keyboard shortcut ─────────────────
   document.addEventListener('keydown', e => {
