@@ -206,6 +206,181 @@
 
 
 
+    [data-theme="candy"] {
+      --bg: #0d0618;
+      --sidebar: #120820;
+      --panel: #180c2a;
+      --panel2: #1e1035;
+      --text: #fce7f3;
+      --text-dim: #9d5baa;
+      --text-faint: #3d1850;
+      --accent: #f472b6;
+      --accent-glow: rgba(244, 114, 182, 0.3);
+      --accent2: #c084fc;
+      --border: #2d1045;
+      --border-bright: #5b2080;
+      --success: #86efac;
+      --warning: #fde68a;
+      --danger: #fca5a5;
+      --preview-bg: #ffffff;
+    }
+
+    [data-theme="candy"] .toolbar {
+      background: linear-gradient(90deg, #1a0830 0%, #2a0d45 50%, #1a0830 100%);
+      border-bottom: 1px solid #5b2080;
+    }
+
+    [data-theme="candy"] .menubar {
+      background: linear-gradient(90deg, #120820, #1e1035, #120820);
+      border-bottom: 1px solid #5b2080;
+    }
+
+    [data-theme="candy"] .sidebar {
+      background: linear-gradient(180deg, #120820 0%, #1a0a2e 100%);
+    }
+
+    [data-theme="candy"] .tab-bar {
+      background: linear-gradient(90deg, #180c2a, #1e1035);
+    }
+
+    [data-theme="candy"] .tab.active {
+      background: linear-gradient(135deg, #5b2080, #9333ea) !important;
+      border-bottom-color: #f472b6 !important;
+    }
+
+    [data-theme="candy"] .btn.btn-primary {
+      background: linear-gradient(135deg, #ec4899, #a855f7) !important;
+      border: none !important;
+    }
+
+    [data-theme="candy"] .statusbar {
+      background: linear-gradient(90deg, #ec4899 0%, #a855f7 50%, #6366f1 100%);
+      color: white;
+    }
+
+    [data-theme="candy"] .statusbar .statusbar-item {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    [data-theme="candy"] .settings-drawer {
+      background: linear-gradient(180deg, #180c2a 0%, #0d0618 100%);
+    }
+
+    [data-theme="candy"] .menubar-logo {
+      background: linear-gradient(90deg, #f472b6, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    [data-theme="neon"] {
+      --bg: #020510;
+      --sidebar: #030818;
+      --panel: #050d20;
+      --panel2: #081228;
+      --text: #e0f4ff;
+      --text-dim: #3a6080;
+      --text-faint: #0d1f35;
+      --accent: #00f5ff;
+      --accent-glow: rgba(0, 245, 255, 0.3);
+      --accent2: #ff00c8;
+      --border: #0a1e38;
+      --border-bright: #0f3060;
+      --success: #00ff9f;
+      --warning: #ffcc00;
+      --danger: #ff3366;
+      --preview-bg: #ffffff;
+    }
+
+    [data-theme="neon"] .menubar {
+      background: linear-gradient(90deg, #020510 0%, #04091a 40%, #050a1c 100%);
+      border-bottom: 1px solid #00f5ff44;
+      box-shadow: 0 1px 20px rgba(0, 245, 255, 0.08);
+    }
+
+    [data-theme="neon"] .menubar-logo {
+      background: linear-gradient(90deg, #00f5ff, #ff00c8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 6px rgba(0, 245, 255, 0.5));
+    }
+
+    [data-theme="neon"] .toolbar {
+      background: linear-gradient(90deg, #030818 0%, #050d20 50%, #030818 100%);
+      border-bottom: 1px solid #00f5ff33;
+    }
+
+    [data-theme="neon"] .sidebar {
+      background: linear-gradient(180deg, #030818 0%, #050d20 100%);
+      border-right: 1px solid #00f5ff22;
+    }
+
+    [data-theme="neon"] .tab-bar {
+      background: linear-gradient(90deg, #030818, #050d20);
+      border-bottom: 1px solid #00f5ff33;
+    }
+
+    [data-theme="neon"] .tab.active {
+      background: linear-gradient(135deg, #0a1e38, #0f3060) !important;
+      border-bottom: 2px solid #00f5ff !important;
+      color: #00f5ff !important;
+      text-shadow: 0 0 8px rgba(0, 245, 255, 0.6);
+    }
+
+    [data-theme="neon"] .btn.btn-primary {
+      background: linear-gradient(135deg, #00b8c8, #0080ff) !important;
+      border: 1px solid #00f5ff66 !important;
+      box-shadow: 0 0 12px rgba(0, 245, 255, 0.3) !important;
+      color: #fff !important;
+    }
+
+    [data-theme="neon"] .btn.btn-primary:hover {
+      box-shadow: 0 0 20px rgba(0, 245, 255, 0.5) !important;
+    }
+
+    [data-theme="neon"] .statusbar {
+      background: linear-gradient(90deg, #00b8c8 0%, #0060ff 50%, #ff00c8 100%);
+      box-shadow: 0 -1px 12px rgba(0, 245, 255, 0.2);
+    }
+
+    [data-theme="neon"] .statusbar .statusbar-item {
+      color: rgba(255, 255, 255, 0.95) !important;
+      text-shadow: 0 0 4px rgba(0, 245, 255, 0.4);
+    }
+
+    [data-theme="neon"] .sidebar-title {
+      border-bottom: 1px solid #00f5ff22;
+    }
+
+    [data-theme="neon"] .file-item:hover {
+      background: rgba(0, 245, 255, 0.06) !important;
+    }
+
+    [data-theme="neon"] .file-item.active {
+      background: rgba(0, 245, 255, 0.1) !important;
+      border-left: 2px solid #00f5ff !important;
+    }
+
+    [data-theme="neon"] .settings-drawer {
+      background: linear-gradient(180deg, #050d20 0%, #020510 100%);
+      border-left: 1px solid #00f5ff22;
+    }
+
+    [data-theme="neon"] .preview-toolbar {
+      background: linear-gradient(90deg, #030818, #050d20);
+      border-bottom: 1px solid #00f5ff22;
+    }
+
+    [data-theme="neon"] .console-header {
+      background: linear-gradient(90deg, #030818, #050d20);
+      border-bottom: 1px solid #ff00c833;
+      color: #ff00c8;
+    }
+
+    [data-theme="neon"] .icon-btn:hover {
+      color: #00f5ff !important;
+      text-shadow: 0 0 8px rgba(0, 245, 255, 0.7);
+    }
+
     [data-theme="matrix"] {
       --bg: #000300;
       --sidebar: #000500;
@@ -1806,6 +1981,11 @@
       color: #00ff41;
     }
 
+    [data-theme="neon"] .btn-ghost:hover {
+      color: #00f5ff !important;
+      background: rgba(0, 245, 255, 0.08) !important;
+    }
+
     [data-theme="matrix"] .btn-primary {
       box-shadow: 0 0 16px rgba(0, 255, 65, 0.4);
     }
@@ -1938,6 +2118,8 @@
           <button class="btn btn-ghost" onclick="editorAction('redo')"><i class="fas fa-redo"></i></button>
           <div class="toolbar-sep"></div>
           <button class="btn btn-ghost" onclick="formatCode()" title="Format Code"><i class="fas fa-magic"></i></button>
+                   
+          <button class="btn btn-ghost" onclick="autoFixCode()" title="Auto-Fix Bugs" style="gap:4px;color:#22c55e"><i class="fas fa-wrench" style="font-size:11px"></i><span style="font-size:10px">Fix</span></button>
           <div style="display:inline-flex;align-items:center;gap:0;position:relative" id="smart-find-wrap">
             <button class="btn btn-ghost" id="smart-find-btn" onclick="toggleSmartFind()" title="Smart Find Mode" style="border-radius:5px 0 0 5px;border-right:1px solid var(--border);padding:0 7px"><i class="fas fa-brain" style="font-size:11px"></i><span style="font-size:10px;margin-left:4px;letter-spacing:.03em">Smart</span></button><button class="btn btn-ghost" onclick="openFind()" title="Find (⌘F)" style="border-radius:0 5px 5px 0;padding:0 7px"><i class="fas fa-search" style="font-size:11px"></i></button>
           </div>
@@ -1974,14 +2156,20 @@
               <div class="tbx-item" onclick="tbxHtmlEntities()"><i class="fas fa-exchange-alt"></i> HTML Entities</div>
               <div class="tbx-item" onclick="tbxMetaTags()"><i class="fas fa-tags"></i> Meta Tag Generator</div>
               <div class="tbx-sep"></div>
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 2px">CSS</div>
+              <div
+                style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 2px">
+                CSS</div>
               <div class="tbx-item" onclick="tbxBgMaker()"><i class="fas fa-image"></i> Background Maker</div>
               <div class="tbx-item" onclick="tbxAnimBuilder()"><i class="fas fa-magic"></i> Animation Builder</div>
-              <div class="tbx-item" onclick="tbxTransitionBuilder()"><i class="fas fa-sliders-h"></i> Transition Builder</div>
+              <div class="tbx-item" onclick="tbxTransitionBuilder()"><i class="fas fa-sliders-h"></i> Transition Builder
+              </div>
               <div class="tbx-item" onclick="tbxFlexHelper()"><i class="fas fa-th-large"></i> Flexbox Helper</div>
-              <div class="tbx-item" onclick="tbxBorderRadius()"><i class="fas fa-vector-square"></i> Border Radius Maker</div>
+              <div class="tbx-item" onclick="tbxBorderRadius()"><i class="fas fa-vector-square"></i> Border Radius Maker
+              </div>
               <div class="tbx-sep"></div>
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 2px">HTML</div>
+              <div
+                style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 2px">
+                HTML</div>
               <div class="tbx-item" onclick="tbxTableGen()"><i class="fas fa-table"></i> Table Generator</div>
               <div class="tbx-item" onclick="tbxFormBuilder()"><i class="fas fa-wpforms"></i> Form Builder</div>
               <div class="tbx-item" onclick="tbxFaviconTag()"><i class="fas fa-star"></i> Favicon Tag Helper</div>
@@ -3181,6 +3369,88 @@ function addConsoleLog(level, msg) {
   log.scrollTop = log.scrollHeight;
 }
 
+function autoFixCode() {
+  const file = state.files[state.activeFile];
+  if (!file) { showToast('No file open', 'warn'); return; }
+  if (file.isImage) { showToast('Cannot fix image files', 'warn'); return; }
+
+  let code = editor ? editor.getValue() : file.content;
+  const lang = file.language;
+  let fixes = 0;
+  const log = [];
+
+  if (lang === 'html') {
+    // Fix missing alt attributes on img tags
+    const imgNoAlt = code.match(/<img(?![^>]*alt=)[^>]*(\/?>)/gi);
+    if (imgNoAlt) {
+      code = code.replace(/<img(?![^>]*alt=)([^>]*)(\/?>)/gi, (m, attrs, close) => {
+        fixes++;
+        return `<img${attrs} alt=""${close}`;
+      });
+      log.push('Added missing alt="" to img tags');
+    }
+    // Fix missing lang on <html>
+    if (/<html(?![^>]*lang=)[^>]*>/i.test(code)) {
+      code = code.replace(/<html(?![^>]*lang=)([^>]*)>/i, (m, attrs) => { fixes++; return `<html${attrs} lang="en">`; });
+      log.push('Added lang="en" to <html>');
+    }
+    // Fix missing charset meta
+    if (!/<meta[^>]*charset/i.test(code) && /<head/i.test(code)) {
+      code = code.replace(/(<head[^>]*>)/i, '$1\n  <meta charset="UTF-8">');
+      fixes++; log.push('Added charset meta tag');
+    }
+    // Fix missing viewport meta
+    if (!/<meta[^>]*viewport/i.test(code) && /<head/i.test(code)) {
+      code = code.replace(/(<head[^>]*>)/i, '$1\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">');
+      fixes++; log.push('Added viewport meta tag');
+    }
+    // Fix unclosed <br> and <hr> tags
+    const brFixed = code.replace(/<br(?!\s*\/?>)(\s*)>/gi, (m, s) => { fixes++; return `<br${s}/>`; });
+    if (brFixed !== code) { code = brFixed; log.push('Fixed unclosed <br> tags'); }
+  }
+
+  if (lang === 'css' || lang === 'html') {
+    // Fix double semicolons
+    const dblSemi = code.replace(/;;+/g, ';');
+    if (dblSemi !== code) { fixes += (code.match(/;;+/g)||[]).length; code = dblSemi; log.push('Removed duplicate semicolons'); }
+    // Fix missing semicolons before closing brace (simple cases)
+    const missingSemi = code.replace(/([^;{}\s\/*])\s*\n(\s*})/g, (m, last, close) => { fixes++; return `${last};\n${close}`; });
+    if (missingSemi !== code) { code = missingSemi; log.push('Added missing semicolons before }'); }
+  }
+
+  if (lang === 'javascript' || lang === 'typescript') {
+    // Fix === vs == (loose equality → strict)
+    const looseEq = code.replace(/([^=!<>])={2}([^=])/g, (m, a, b) => { fixes++; return `${a}===${b}`; });
+    if (looseEq !== code) { code = looseEq; log.push('Replaced == with ==='); }
+    // Fix != to !==
+    const looseNeq = code.replace(/!={1}([^=])/g, (m, b) => { fixes++; return `!==${b}`; });
+    if (looseNeq !== code) { code = looseNeq; log.push('Replaced != with !=='); }
+    // Remove trailing whitespace
+    const noTrail = code.replace(/[ \t]+$/gm, '');
+    if (noTrail !== code) { fixes++; code = noTrail; log.push('Removed trailing whitespace'); }
+    // Fix double semicolons
+    const dblSemiJ = code.replace(/;;+/g, ';');
+    if (dblSemiJ !== code) { fixes += (code.match(/;;+/g)||[]).length; code = dblSemiJ; log.push('Removed duplicate semicolons'); }
+  }
+
+  // Universal: remove trailing whitespace on all lines
+  const noTrailAll = code.replace(/[ \t]+$/gm, '');
+  if (noTrailAll !== code && lang !== 'javascript' && lang !== 'typescript') {
+    fixes++; code = noTrailAll; log.push('Removed trailing whitespace');
+  }
+
+  if (fixes === 0) {
+    showToast('✅ No issues found — code looks clean!', 'success');
+    return;
+  }
+
+  if (editor) editor.setValue(code);
+  file.content = code;
+  saveState();
+  showToast(`🔧 Fixed ${fixes} issue${fixes>1?'s':''}! (${log.slice(0,2).join(', ')}${log.length>2?'…':''})`, 'success');
+  console.log('[Auto-Fix] Applied fixes:', log);
+}
+
 function escapeHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -3293,6 +3563,8 @@ const THEMES = {
   matrix:    { bg:'#000300', sidebar:'#000500', accent:'#00ff41', label:'Matrix' },
   light:     { bg:'#f0f0f5', sidebar:'#e4e4ec', accent:'#6366f1', label:'Light' },
   deepslate: { bg:'#B218FF', sidebar:'#A219FF', accent:'#C504FF', label:'Deepslate' },
+  candy:     { bg:'#0d0618', sidebar:'#120820', accent:'#f472b6', label:'Candy' }, 
+  neon:      { bg:'#020510', sidebar:'#030818', accent:'#00f5ff', label:'Neon City' }, 
 };
 
 function buildThemeGrid() {
