@@ -1306,6 +1306,7 @@
       gap: 4px;
       flex-shrink: 0;
       overflow-x: auto;
+      overflow-y: hidden;
     }
 
     .toolbar::-webkit-scrollbar {
@@ -2904,7 +2905,7 @@
           <div style="position:relative;display:inline-flex" id="toolbox-wrap">
             <button class="btn btn-ghost" id="toolbox-btn" onclick="toggleToolbox()" title="Toolbox" style="gap:4px"><i class="fas fa-toolbox"></i><span style="font-size:10px">Tools</span><i class="fas fa-chevron-down" style="font-size:8px;opacity:.6"></i></button>
             <div id="toolbox-menu"
-              style="display:none;position:fixed;top:0;right:0;background:var(--panel);border:1px solid var(--border-bright);border-radius:8px;min-width:220px;padding:6px;z-index:9999;box-shadow:0 8px 40px rgba(0,0,0,.6)">
+              style="display:none;position:fixed;top:0;right:0;background:var(--panel);border:1px solid var(--border-bright);border-radius:8px;min-width:220px;padding:6px;z-index:9999;box-shadow:0 8px 40px rgba(0,0,0,.6);max-height:80vh;overflow-y:auto;">
               <div
                 style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 6px">
                 Tools</div>
