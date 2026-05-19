@@ -3444,11 +3444,33 @@ let consoleCap = state.settings.consoleCap;
 // PERSISTENCE
 // ═══════════════════════════════════════
 function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
+
+
+
+
+window.addEventListener('beforeunload', () => {
+  if (editor && state.activeFile && !state.files[state.activeFile]?.isImage) {
+    state.files[state.activeFile].content = editor.getValue();
+  }
+  saveState();
+});
+
+
+
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    if (editor && state.activeFile && !state.files[state.activeFile]?.isImage) {
+      state.files[state.activeFile].content = editor.getValue();
+    }
+    saveState();
+  }
+});
 
 function saveState() {
   try {
