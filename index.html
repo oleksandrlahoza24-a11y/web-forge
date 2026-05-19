@@ -2794,6 +2794,8 @@
           <div class="dropdown-item" onclick="saveCurrentFile()"><i class="fas fa-save"></i> Save <kbd>⌘S</kbd></div>
           <div class="dropdown-item" onclick="exportProject()"><i class="fas fa-download"></i> Export HTML</div>
           <div class="dropdown-item" onclick="exportZip()"><i class="fas fa-file-archive"></i> Export ZIP</div>
+          <div class="dropdown-item" onclick="openSplitModal()"><i class="fas fa-object-ungroup"></i> Split into Files…
+          </div>
           <div class="dropdown-sep"></div>
           <div class="dropdown-item" onclick="clearAll()"><i class="fas fa-trash" style="color:var(--danger)"></i> Clear
             All</div>
@@ -2949,6 +2951,13 @@
               <div class="tbx-item" onclick="tbxTableGen()"><i class="fas fa-table"></i> Table Generator</div>
               <div class="tbx-item" onclick="tbxFormBuilder()"><i class="fas fa-wpforms"></i> Form Builder</div>
               <div class="tbx-item" onclick="tbxFaviconTag()"><i class="fas fa-star"></i> Favicon Tag Helper</div>
+                            <div class="tbx-sep"></div>
+                            <div
+                style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-faint);padding:4px 8px 2px">
+                Creative</div>
+                            <div class="tbx-item" onclick="tbxPixelArt()"><i class="fas fa-th"></i> Pixel Art Editor
+              </div>
+                         
             </div>
           </div>
           <button class="btn btn-ghost" onclick="openSettings()"><i class="fas fa-cog"></i></button>
@@ -4904,6 +4913,232 @@ function toggleToolbox() {
   setTimeout(() => document.addEventListener('mousedown', close), 10);
 }
 
+function tbxPixelArt() {
+  const defaultSize = 16;
+  _tbxModal('Pixel Art Editor', 'fa-th', `
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:6px">
+          Grid
+          <select id="tbx-px-size" style="background:var(--panel2);border:1px solid var(--border-bright);color:var(--text);border-radius:5px;padding:3px 7px;font-size:11px;font-family:var(--font-ui)" onchange="tbxPxResize()">
+            <option value="8">8×8</option>
+            <option value="16" selected>16×16</option>
+            <option value="24">24×24</option>
+            <option value="32">32×32</option>
+            <option value="48">48×48</option>
+          </select>
+        </label>
+        <label style="font-size:11px;color:var(--text-dim);display:flex;align-items:center;gap:6px">
+          Colour
+          <input type="color" id="tbx-px-color" value="#6366f1" style="width:34px;height:26px;border:none;border-radius:5px;cursor:pointer;background:transparent">
+        </label>
+        <button onclick="tbxPxSetTool('draw')" id="tbx-px-tool-draw" class="btn btn-primary" style="height:26px;padding:0 10px;font-size:11px"><i class="fas fa-pen"></i> Draw</button>
+        <button onclick="tbxPxSetTool('erase')" id="tbx-px-tool-erase" class="btn btn-subtle" style="height:26px;padding:0 10px;font-size:11px"><i class="fas fa-eraser"></i> Erase</button>
+        <button onclick="tbxPxSetTool('fill')" id="tbx-px-tool-fill" class="btn btn-subtle" style="height:26px;padding:0 10px;font-size:11px"><i class="fas fa-fill-drip"></i> Fill</button>
+        <button onclick="tbxPxClear()" class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="tbx-px-palette">
+        ${['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#6366f1','#a855f7','#ec4899','#ffffff','#94a3b8','#475569','#1e293b','#000000','#f8fafc','#fde68a','#bbf7d0'].map(c=>`<div onclick="document.getElementById('tbx-px-color').value='${c}'" style="width:20px;height:20px;border-radius:4px;background:${c};cursor:pointer;border:2px solid transparent;transition:.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='transparent'"></div>`).join('')}
+      </div>
+      <div style="overflow:auto;max-height:340px;border:1px solid var(--border-bright);border-radius:8px;background:repeating-conic-gradient(#2a2a2a 0% 25%, #1a1a1a 0% 50%) 0 0/16px 16px;display:flex;align-items:center;justify-content:center;padding:8px;touch-action:none">
+        <canvas id="tbx-px-canvas" style="cursor:crosshair;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none"></canvas>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="tbxPxExportCSS()" class="btn btn-primary" style="height:28px;padding:0 12px;font-size:11px"><i class="fas fa-code"></i> Export CSS</button>
+        <button onclick="tbxPxExportSVG()" class="btn btn-subtle" style="height:28px;padding:0 12px;font-size:11px"><i class="fas fa-vector-square"></i> Export SVG</button>
+        <button onclick="tbxPxExportDataURL()" class="btn btn-subtle" style="height:28px;padding:0 12px;font-size:11px"><i class="fas fa-image"></i> Export PNG</button>
+        <button onclick="tbxPxInjectFile()" class="btn btn-ghost" style="height:28px;padding:0 12px;font-size:11px"><i class="fas fa-file-import"></i> Save as File</button>
+      </div>
+      <div id="tbx-px-output" style="display:none;flex-direction:column;gap:6px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim)" id="tbx-px-output-label">Output</div>
+        <textarea id="tbx-px-output-code" readonly style="width:100%;height:120px;background:var(--panel2);border:1px solid var(--border-bright);border-radius:6px;color:var(--accent2);font-family:var(--font-mono);font-size:10px;padding:8px;resize:vertical;outline:none;box-sizing:border-box"></textarea>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('tbx-px-output-code').value);showToast('Copied!','success')" class="btn btn-subtle" style="height:26px;padding:0 10px;font-size:11px;align-self:flex-start"><i class="fas fa-copy"></i> Copy</button>
+      </div>
+    </div>`, 600);
+  requestAnimationFrame(() => {
+    window._tbxPx = {
+      tool: 'draw',
+      size: 16,
+      pixels: {},
+      painting: false
+    };
+    tbxPxResize();
+  });
+}
+
+function tbxPxSetTool(t) {
+  window._tbxPx.tool = t;
+  ['draw','erase','fill'].forEach(n => {
+    const b = document.getElementById('tbx-px-tool-' + n);
+    if (b) { b.className = n === t ? 'btn btn-primary' : 'btn btn-subtle'; b.style.height='26px'; b.style.padding='0 10px'; b.style.fontSize='11px'; }
+  });
+}
+
+function tbxPxResize() {
+  const sel = document.getElementById('tbx-px-size');
+  if (!sel) return;
+  const size = parseInt(sel.value);
+  window._tbxPx.size = size;
+  window._tbxPx.pixels = {};
+  tbxPxRender();
+}
+
+function tbxPxRender() {
+  const c = document.getElementById('tbx-px-canvas');
+  if (!c) return;
+  const size = window._tbxPx.size;
+  const cellMax = Math.min(Math.floor(Math.min(window.innerWidth * 0.7, 520) / size), 20);
+  const cell = Math.max(cellMax, 6);
+  c.width = size * cell;
+  c.height = size * cell;
+  c.style.width = (size * cell) + 'px';
+  c.style.height = (size * cell) + 'px';
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const key = x + ',' + y;
+      if (window._tbxPx.pixels[key]) {
+        ctx.fillStyle = window._tbxPx.pixels[key];
+        ctx.fillRect(x * cell, y * cell, cell, cell);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.strokeRect(x * cell + 0.5, y * cell + 0.5, cell - 1, cell - 1);
+    }
+  }
+  c._cell = cell;
+  tbxPxBindEvents(c);
+}
+
+function tbxPxBindEvents(c) {
+  const getXY = e => {
+    const r = c.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const cell = c._cell;
+    return [Math.floor((clientX - r.left) / cell), Math.floor((clientY - r.top) / cell)];
+  };
+  const paint = e => {
+    e.preventDefault();
+    const [x, y] = getXY(e);
+    const size = window._tbxPx.size;
+    if (x < 0 || y < 0 || x >= size || y >= size) return;
+    const key = x + ',' + y;
+    if (window._tbxPx.tool === 'erase') {
+      delete window._tbxPx.pixels[key];
+    } else if (window._tbxPx.tool === 'fill') {
+      const target = window._tbxPx.pixels[key] || null;
+      const fill = document.getElementById('tbx-px-color').value;
+      if (target === fill) return;
+      const stack = [[x, y]];
+      const visited = new Set();
+      while (stack.length) {
+        const [cx, cy] = stack.pop();
+        const ck = cx + ',' + cy;
+        if (visited.has(ck) || cx < 0 || cy < 0 || cx >= size || cy >= size) continue;
+        if ((window._tbxPx.pixels[ck] || null) !== target) continue;
+        visited.add(ck);
+        window._tbxPx.pixels[ck] = fill;
+        stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+      }
+      tbxPxRender(); return;
+    } else {
+      window._tbxPx.pixels[key] = document.getElementById('tbx-px-color').value;
+    }
+    tbxPxRender();
+  };
+  c.onmousedown = e => { window._tbxPx.painting = true; paint(e); };
+  c.onmousemove = e => { if (window._tbxPx.painting) paint(e); };
+  c.onmouseup = () => { window._tbxPx.painting = false; };
+  c.onmouseleave = () => { window._tbxPx.painting = false; };
+  c.ontouchstart = e => { window._tbxPx.painting = true; paint(e); };
+  c.ontouchmove = e => { window._tbxPx.painting = true; paint(e); };
+  c.ontouchend = () => { window._tbxPx.painting = false; };
+}
+
+function tbxPxClear() {
+  window._tbxPx.pixels = {};
+  tbxPxRender();
+  document.getElementById('tbx-px-output').style.display = 'none';
+}
+
+function tbxPxExportCSS() {
+  const size = window._tbxPx.size;
+  const pixels = window._tbxPx.pixels;
+  const shadows = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const c = pixels[x + ',' + y];
+      if (c) shadows.push(`${x + 1}px ${y + 1}px 0 ${c}`);
+    }
+  }
+  if (!shadows.length) { showToast('Draw something first!', 'warn'); return; }
+  const css = `.pixel-art {\n  display: inline-block;\n  width: 1px;\n  height: 1px;\n  box-shadow:\n    ${shadows.join(',\n    ')};\n}`;
+  const out = document.getElementById('tbx-px-output');
+  document.getElementById('tbx-px-output-label').textContent = 'CSS box-shadow Output';
+  document.getElementById('tbx-px-output-code').value = css;
+  out.style.display = 'flex';
+  showToast('CSS generated!', 'success');
+}
+
+function tbxPxExportSVG() {
+  const size = window._tbxPx.size;
+  const pixels = window._tbxPx.pixels;
+  const rects = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const c = pixels[x + ',' + y];
+      if (c) rects.push(`  <rect x="${x}" y="${y}" width="1" height="1" fill="${c}"/>`);
+    }
+  }
+  if (!rects.length) { showToast('Draw something first!', 'warn'); return; }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">\n${rects.join('\n')}\n</svg>`;
+  document.getElementById('tbx-px-output-label').textContent = 'SVG Output';
+  document.getElementById('tbx-px-output-code').value = svg;
+  document.getElementById('tbx-px-output').style.display = 'flex';
+  showToast('SVG generated!', 'success');
+}
+
+function tbxPxExportDataURL() {
+  const c = document.getElementById('tbx-px-canvas');
+  if (!c) return;
+  const size = window._tbxPx.size;
+  const offscreen = document.createElement('canvas');
+  offscreen.width = size; offscreen.height = size;
+  const ctx = offscreen.getContext('2d');
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const col = window._tbxPx.pixels[x + ',' + y];
+      if (col) { ctx.fillStyle = col; ctx.fillRect(x, y, 1, 1); }
+    }
+  }
+  const url = offscreen.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pixel-art.png'; a.click();
+  showToast('PNG downloaded!', 'success');
+}
+
+function tbxPxInjectFile() {
+  const size = window._tbxPx.size;
+  const pixels = window._tbxPx.pixels;
+  const rects = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const c = pixels[x + ',' + y];
+      if (c) rects.push(`  <rect x="${x}" y="${y}" width="1" height="1" fill="${c}"/>`);
+    }
+  }
+  if (!rects.length) { showToast('Draw something first!', 'warn'); return; }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges">\n${rects.join('\n')}\n</svg>`;
+  const name = 'pixel-art.svg';
+  state.files[name] = { content: svg, language: 'xml' };
+  if (!state.openTabs.includes(name)) state.openTabs.push(name);
+  renderFileTree(); renderTabs(); switchFile(name);
+  document.getElementById('tbx-modal-overlay')?.remove();
+  showToast('Saved as pixel-art.svg ✓', 'success');
+  saveState();
+}
+
 function _tbxModal(title, icon, bodyHtml, width) {
   document.getElementById('tbx-modal-overlay')?.remove();
   const ov = document.createElement('div');
@@ -5761,6 +5996,220 @@ async function exportZip() {
   // Simple multi-file export as combined HTML
   exportProject();
   showToast('ZIP export: use "Export HTML" for now', 'warn');
+}
+
+// ════════════════════════════════════════
+// SPLIT INTO FILES
+// ════════════════════════════════════════
+function openSplitModal() {
+  closeAllMenus();
+  if (document.getElementById('split-modal')) return;
+  const modal = document.createElement('div');
+  modal.id = 'split-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);z-index:900;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--panel);border:1px solid var(--border-bright);border-radius:10px;width:min(560px,94vw);box-shadow:0 24px 64px rgba(0,0,0,.7);display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Header -->
+      <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-object-ungroup" style="color:var(--accent);font-size:15px;"></i>
+        <span style="font-size:14px;font-weight:600;color:var(--text);">Split into Multiple Files</span>
+        <button onclick="closeSplitModal()" style="margin-left:auto;background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;" title="Close"><i class="fas fa-times"></i></button>
+      </div>
+      <!-- Body -->
+      <div style="padding:20px 18px;display:flex;flex-direction:column;gap:16px;">
+        <!-- Source file -->
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;">Source File</label>
+          <select id="split-src" style="width:100%;background:var(--panel2);border:1px solid var(--border-bright);border-radius:6px;color:var(--text);padding:7px 10px;font-family:var(--font-ui);font-size:13px;outline:none;"></select>
+        </div>
+        <!-- Base name -->
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;">Output Base Name</label>
+          <input id="split-base" value="index" placeholder="e.g. index" style="width:100%;background:var(--panel2);border:1px solid var(--border-bright);border-radius:6px;color:var(--text);padding:7px 10px;font-family:var(--font-ui);font-size:13px;outline:none;box-sizing:border-box;">
+          <span style="font-size:10px;color:var(--text-dim);margin-top:4px;display:block;">Creates: &lt;base&gt;.html, &lt;base&gt;.css, &lt;base&gt;.js …</span>
+        </div>
+        <!-- How many files -->
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:6px;">Split Into How Many Files</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="split-count-btns">
+            ${[2,3,4,5].map(n=>`<button class="btn btn-subtle split-n-btn" data-n="${n}" onclick="setSplitCount(${n})" style="flex:1;min-width:56px;font-size:12px;">${n} Files</button>`).join('')}
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-dim);">
+            <div id="split-preview-label"></div>
+          </div>
+        </div>
+        <!-- What to extract -->
+        <div>
+          <label style="font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:8px;">Extract</label>
+          <div style="display:flex;flex-direction:column;gap:6px;" id="split-options">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;"><input type="checkbox" id="split-css" checked style="accent-color:var(--accent);"> Extract CSS into <code style="color:var(--accent2);">&lt;base&gt;.css</code></label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;"><input type="checkbox" id="split-js" checked style="accent-color:var(--accent);"> Extract JS into <code style="color:var(--accent2);">&lt;base&gt;.js</code></label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;"><input type="checkbox" id="split-open" checked style="accent-color:var(--accent);"> Open split files in editor</label>
+          </div>
+        </div>
+        <!-- Info box -->
+        <div id="split-info" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:11px;color:var(--text-dim);line-height:1.7;"></div>
+      </div>
+      <!-- Footer -->
+      <div style="padding:12px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+        <button onclick="closeSplitModal()" class="btn btn-subtle">Cancel</button>
+        <button onclick="doSplitFiles()" class="btn btn-primary"><i class="fas fa-object-ungroup"></i> Split Files</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeSplitModal(); });
+
+  // Populate source dropdown with HTML files
+  const sel = document.getElementById('split-src');
+  Object.keys(state.files).filter(f => f.endsWith('.html')).forEach(f => {
+    const o = document.createElement('option'); o.value = f; o.textContent = f;
+    if (f === state.activeFile) o.selected = true;
+    sel.appendChild(o);
+  });
+  if (!sel.options.length) {
+    const o = document.createElement('option'); o.value = ''; o.textContent = '(no HTML files)';
+    sel.appendChild(o);
+  }
+  setSplitCount(3);
+}
+
+let _splitCount = 3;
+
+function setSplitCount(n) {
+  _splitCount = n;
+  document.querySelectorAll('.split-n-btn').forEach(b => {
+    b.classList.toggle('btn-primary', +b.dataset.n === n);
+    b.classList.toggle('btn-subtle', +b.dataset.n !== n);
+  });
+  _updateSplitInfo();
+}
+
+function _updateSplitInfo() {
+  const base = (document.getElementById('split-base')?.value || 'index').trim() || 'index';
+  const doCSS = document.getElementById('split-css')?.checked;
+  const doJS  = document.getElementById('split-js')?.checked;
+  const files = ['<b style="color:var(--accent2);">' + base + '.html</b>'];
+  if (_splitCount >= 2 && doCSS) files.push('<b style="color:var(--accent2);">' + base + '.css</b>');
+  if (_splitCount >= 3 && doJS)  files.push('<b style="color:var(--accent2);">' + base + '.js</b>');
+  // extra splits beyond 3: split JS into parts
+  for (let i = 4; i <= _splitCount; i++) files.push('<b style="color:var(--accent2);">' + base + '-part' + (i-3) + '.js</b>');
+  document.getElementById('split-info').innerHTML =
+    '📁 Will create ' + files.length + ' file(s): ' + files.join(', ') +
+    '<br><span style="color:var(--text-faint)">Inline &lt;style&gt; and &lt;script&gt; tags will be extracted and linked. The HTML file will reference the new files automatically.</span>';
+}
+
+// Keep info box live
+setTimeout(() => {
+  const bi = document.getElementById('split-base');
+  if (bi) bi.addEventListener('input', _updateSplitInfo);
+  const ci = document.getElementById('split-css');
+  if (ci) ci.addEventListener('change', _updateSplitInfo);
+  const ji = document.getElementById('split-js');
+  if (ji) ji.addEventListener('change', _updateSplitInfo);
+}, 80);
+
+function closeSplitModal() {
+  const m = document.getElementById('split-modal');
+  if (m) m.remove();
+}
+
+function doSplitFiles() {
+  const srcName = document.getElementById('split-src').value;
+  const base    = (document.getElementById('split-base').value || 'index').trim().replace(/\.[^.]+$/, '');
+  const doCSS   = document.getElementById('split-css').checked;
+  const doJS    = document.getElementById('split-js').checked;
+  const doOpen  = document.getElementById('split-open').checked;
+
+  if (!srcName || !state.files[srcName]) {
+    showToast('No source file selected.', 'warn'); return;
+  }
+
+  let html = state.files[srcName].content;
+
+  // ── 1. Extract all <style> blocks → CSS ──
+  const cssChunks = [];
+  if (doCSS && _splitCount >= 2) {
+    html = html.replace(/<style(?:[^>]*)>([\s\S]*?)<\/style>/gi, (_, inner) => {
+      cssChunks.push(inner);
+      return ''; // remove inline style block
+    });
+  }
+
+  // ── 2. Extract all <script> blocks (no src attr) → JS ──
+  const jsChunks = [];
+  if (doJS && _splitCount >= 3) {
+    html = html.replace(/<script(?![^>]*\bsrc\b)[^>]*>([\s\S]*?)<\/script>/gi, (_, inner) => {
+      if (inner.trim()) jsChunks.push(inner);
+      return '';
+    });
+  }
+
+  // ── 3. Build split JS parts (for counts > 3) ──
+  let jsMain = jsChunks.join('\n\n');
+  const jsParts = [];
+  if (_splitCount > 3 && jsMain.trim()) {
+    const lines = jsMain.split('\n');
+    const perPart = Math.ceil(lines.length / (_splitCount - 2));
+    for (let i = 0; i < _splitCount - 2; i++) {
+      jsParts.push(lines.slice(i * perPart, (i + 1) * perPart).join('\n'));
+    }
+    jsMain = ''; // all distributed
+  }
+
+  // ── 4. Inject <link> and <script src> into HTML ──
+  const cssFileName = base + '.css';
+  const jsFileName  = base + '.js';
+
+  if (cssChunks.length) {
+    const linkTag = `<link rel="stylesheet" href="${cssFileName}">`;
+    if (html.includes('</head>')) html = html.replace('</head>', linkTag + '\n</head>');
+    else html = linkTag + '\n' + html;
+  }
+
+  const scriptTags = [];
+  if (jsMain.trim() && jsParts.length === 0) scriptTags.push(`<script src="${jsFileName}"><\/script>`);
+  jsParts.forEach((_, i) => scriptTags.push(`<script src="${base}-part${i+1}.js"><\/script>`));
+  if (scriptTags.length) {
+    if (html.includes('</body>')) html = html.replace('</body>', scriptTags.join('\n') + '\n</body>');
+    else html += '\n' + scriptTags.join('\n');
+  }
+
+  // Clean up extra blank lines
+  html = html.replace(/\n{3,}/g, '\n\n').trim();
+
+  // ── 5. Write files into the editor ──
+  const created = [];
+
+  const htmlOut = base + '.html';
+  state.files[htmlOut] = { content: html, language: 'html' };
+  created.push(htmlOut);
+
+  if (cssChunks.length && doCSS && _splitCount >= 2) {
+    state.files[cssFileName] = { content: cssChunks.join('\n\n'), language: 'css' };
+    created.push(cssFileName);
+  }
+
+  if (jsParts.length > 0) {
+    jsParts.forEach((part, i) => {
+      const n = base + '-part' + (i + 1) + '.js';
+      state.files[n] = { content: part, language: 'javascript' };
+      created.push(n);
+    });
+  } else if (jsMain.trim() && doJS && _splitCount >= 3) {
+    state.files[jsFileName] = { content: jsMain, language: 'javascript' };
+    created.push(jsFileName);
+  }
+
+  saveState();
+  renderFileTree();
+
+  if (doOpen && created.length) {
+    created.forEach(f => openFile(f));
+    setActiveFile(created[0]);
+  }
+
+  closeSplitModal();
+  showToast(`Split into ${created.length} file(s): ${created.join(', ')}`, 'success');
 }
 
 function clearAll() {
