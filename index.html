@@ -1072,6 +1072,7 @@
       font-size: 12px;
       color: var(--text-dim);
       transition: all var(--transition);
+      position: relative;
     }
 
     .tree-folder-header:hover {
@@ -1086,6 +1087,35 @@
 
     .tree-folder.open .tree-folder-header .fa-chevron-right {
       transform: rotate(90deg);
+    }
+
+    .folder-actions {
+      display: none;
+      gap: 3px;
+      margin-left: auto;
+    }
+
+    .tree-folder-header:hover .folder-actions {
+      display: flex;
+    }
+
+    .folder-actions button {
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 10px;
+      border-radius: 3px;
+    }
+
+    .folder-actions button:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
     }
 
     .tree-folder-children {
@@ -4015,7 +4045,14 @@ function renderFileTree() {
     folderEl.id = 'folder-' + CSS.escape(folderName);
     const header = document.createElement('div');
     header.className = 'tree-folder-header';
-    header.innerHTML = `<i class="fas fa-chevron-right"></i><i class="fas fa-folder" style="color:#fbbf24;font-size:12px"></i> <span>${folderName}</span>`;
+    header.innerHTML = `
+      <i class="fas fa-chevron-right"></i>
+      <i class="fas fa-folder" style="color:#fbbf24;font-size:12px"></i>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${folderName}</span>
+      <div class="folder-actions">
+        <button onclick="deleteFolder('${folderName}');event.stopPropagation()" title="Delete Folder" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
+      </div>
+    `;
     header.onclick = () => folderEl.classList.toggle('open');
 
     const children = document.createElement('div');
@@ -4225,6 +4262,48 @@ function confirmNewFolder() {
   closeModal('new-folder-modal');
   renderFileTree();
   showToast(`Created folder ${name}`, 'success');
+  saveState();
+}
+
+function deleteFolder(folderName) {
+  if (!confirm(`Delete folder "${folderName}" and ALL its contents? This cannot be undone.`)) return;
+
+  // Find all files in the folder
+  const prefix = folderName + '/';
+  const filesToDelete = Object.keys(state.files).filter(f => f.startsWith(prefix));
+
+  // Delete all files and their editor models
+  filesToDelete.forEach(path => {
+    delete state.files[path];
+    delete editorModels[path];
+
+    // Close tab if open
+    const idx = state.openTabs.indexOf(path);
+    if (idx !== -1) state.openTabs.splice(idx, 1);
+
+    // Unset active file if it was inside the folder
+    if (state.activeFile === path) {
+      state.activeFile = null;
+      document.getElementById('editor-container').style.display = 'none';
+      const imgViewer = document.getElementById('image-viewer');
+      if (imgViewer) imgViewer.style.display = 'none';
+    }
+  });
+
+  // Delete the folder itself
+  delete state.folders[folderName];
+
+  // Fallback active file if we closed it
+  if (!state.activeFile && state.openTabs.length > 0) {
+    switchFile(state.openTabs[state.openTabs.length - 1]);
+  } else if (!state.activeFile) {
+    const anyFile = Object.keys(state.files)[0];
+    if (anyFile) switchFile(anyFile);
+  }
+
+  renderFileTree();
+  renderTabs();
+  showToast(`Deleted folder ${folderName}`, 'success');
   saveState();
 }
 
