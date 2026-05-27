@@ -3818,56 +3818,91 @@ require(['vs/editor/editor.main'], function() {
 // FILE LANGUAGE DETECTION
 // ═══════════════════════════════════════
 const EXT_LANG = {
-  html: 'html', htm: 'html',
-  css: 'css', scss: 'css', sass: 'css', less: 'css',
-  js: 'javascript', mjs: 'javascript', cjs: 'javascript',
-  ts: 'typescript', tsx: 'typescript',
-  jsx: 'javascript',
-  json: 'json', jsonc: 'json',
-  md: 'markdown', mdx: 'markdown',
-  py: 'python',
-  yaml: 'yaml', yml: 'yaml',
-  xml: 'xml', svg: 'xml',
-  sql: 'sql',
-  sh: 'shell', bash: 'shell', zsh: 'shell',
-  rs: 'rust',
-  go: 'go',
-  cpp: 'cpp', c: 'cpp', cc: 'cpp', h: 'cpp',
-  php: 'php',
-  rb: 'ruby',
-  swift: 'swift',
-  kt: 'kotlin', kts: 'kotlin',
-  vue: 'vue',
-  txt: 'plaintext',
-  env: 'shell',
-  toml: 'toml',
-  ini: 'ini',
-  Dockerfile: 'shell',
+  html: 'html', htm: 'html',
+  css: 'css', scss: 'css', sass: 'css', less: 'css',
+  js: 'javascript', mjs: 'javascript', cjs: 'javascript',
+  ts: 'typescript', tsx: 'typescript',
+  jsx: 'javascript',
+  json: 'json', jsonc: 'json',
+  md: 'markdown', mdx: 'markdown',
+  py: 'python', pyw: 'python',
+  yaml: 'yaml', yml: 'yaml',
+  xml: 'xml', svg: 'xml',
+  sql: 'sql',
+  sh: 'shell', bash: 'shell', zsh: 'shell',
+  rs: 'rust',
+  go: 'go',
+  cpp: 'cpp', c: 'cpp', cc: 'cpp', h: 'cpp', hpp: 'cpp',
+  cs: 'csharp',
+  java: 'java',
+  php: 'php',
+  rb: 'ruby',
+  swift: 'swift',
+  kt: 'kotlin', kts: 'kotlin',
+  vue: 'vue',
+  svelte: 'html',
+  txt: 'plaintext', csv: 'plaintext', log: 'plaintext',
+  env: 'shell',
+  toml: 'toml',
+  ini: 'ini',
+  Dockerfile: 'shell',
+  wasm: 'wasm'
 };
 
 const FILE_ICONS = {
-  html: { icon: 'fa-html5', color: '#e44d26' },
-  css: { icon: 'fa-css3-alt', color: '#264de4' },
-  js: { icon: 'fa-js', color: '#f7df1e' },
-  ts: { icon: 'fa-code', color: '#3178c6' },
-  json: { icon: 'fa-brackets-curly', color: '#fbbf24' },
-  md: { icon: 'fa-markdown', color: '#888' },
-  py: { icon: 'fa-python', color: '#3572a5' },
-  jpg: { icon: 'fa-image', color: '#f59e0b' },
-  jpeg: { icon: 'fa-image', color: '#f59e0b' },
-  png: { icon: 'fa-image', color: '#22d3ee' },
-  gif: { icon: 'fa-image', color: '#a78bfa' },
-  svg: { icon: 'fa-bezier-curve', color: '#f97316' },
-  webp: { icon: 'fa-image', color: '#34d399' },
-  _default: { icon: 'fa-file', color: 'var(--text-dim)' }
+  html: { icon: 'fab fa-html5', color: '#e44d26' },
+  htm: { icon: 'fab fa-html5', color: '#e44d26' },
+  css: { icon: 'fab fa-css3-alt', color: '#264de4' },
+  scss: { icon: 'fab fa-sass', color: '#cc6699' },
+  sass: { icon: 'fab fa-sass', color: '#cc6699' },
+  less: { icon: 'fab fa-less', color: '#1d365d' },
+  js: { icon: 'fab fa-js', color: '#f7df1e' },
+  mjs: { icon: 'fab fa-js', color: '#f7df1e' },
+  cjs: { icon: 'fab fa-js', color: '#f7df1e' },
+  jsx: { icon: 'fab fa-react', color: '#61dafb' },
+  ts: { icon: 'fas fa-code', color: '#3178c6' },
+  tsx: { icon: 'fab fa-react', color: '#3178c6' },
+  vue: { icon: 'fab fa-vuejs', color: '#41b883' },
+  json: { icon: 'fas fa-file-code', color: '#fbbf24' },
+  jsonc: { icon: 'fas fa-file-code', color: '#fbbf24' },
+  md: { icon: 'fab fa-markdown', color: '#888' },
+  mdx: { icon: 'fab fa-markdown', color: '#888' },
+  py: { icon: 'fab fa-python', color: '#3572a5' },
+  rs: { icon: 'fab fa-rust', color: '#dea584' },
+  go: { icon: 'fab fa-golang', color: '#00add8' },
+  java: { icon: 'fab fa-java', color: '#b07219' },
+  cs: { icon: 'fas fa-code', color: '#178600' },
+  c: { icon: 'fas fa-code', color: '#555555' },
+  cpp: { icon: 'fas fa-code', color: '#f34b7d' },
+  php: { icon: 'fab fa-php', color: '#4F5D95' },
+  rb: { icon: 'fas fa-gem', color: '#701516' }, 
+  sql: { icon: 'fas fa-database', color: '#e38c00' },
+  sh: { icon: 'fas fa-terminal', color: '#4Eaa25' },
+  bash: { icon: 'fas fa-terminal', color: '#4Eaa25' },
+  yaml: { icon: 'fas fa-file-alt', color: '#cb171e' },
+  yml: { icon: 'fas fa-file-alt', color: '#cb171e' },
+  xml: { icon: 'fas fa-file-code', color: '#f97316' },
+  csv: { icon: 'fas fa-file-csv', color: '#10b981' },
+  txt: { icon: 'fas fa-file-alt', color: 'var(--text-dim)' },
+  env: { icon: 'fas fa-cog', color: '#eab308' },
+  jpg: { icon: 'fas fa-image', color: '#f59e0b' },
+  jpeg: { icon: 'fas fa-image', color: '#f59e0b' },
+  png: { icon: 'fas fa-image', color: '#22d3ee' },
+  gif: { icon: 'fas fa-image', color: '#a78bfa' },
+  svg: { icon: 'fas fa-bezier-curve', color: '#f97316' },
+  webp: { icon: 'fas fa-image', color: '#34d399' },
+  ico: { icon: 'fas fa-image', color: '#34d399' },
+  _default: { icon: 'fas fa-file', color: 'var(--text-dim)' }
 };
 
 function getFileInfo(name) {
-  const ext = name.split('.').pop().toLowerCase();
-  const lang = EXT_LANG[ext] || 'plaintext';
-  const icon = FILE_ICONS[ext] || FILE_ICONS._default;
-  const isImage = ['jpg','jpeg','png','gif','webp','bmp','ico','avif'].includes(ext);
-  return { ext, lang, icon, isImage };
+  const ext = name.split('.').pop().toLowerCase();
+  // Handle extensionless files
+  const actualExt = name.includes('.') ? ext : name.toLowerCase();
+  const lang = EXT_LANG[actualExt] || 'plaintext';
+  const icon = FILE_ICONS[actualExt] || FILE_ICONS._default;
+  const isImage = ['jpg','jpeg','png','gif','webp','bmp','ico','avif'].includes(actualExt);
+  return { ext: actualExt, lang, icon, isImage };
 }
 
 const IMAGE_EXTS = new Set(['jpg','jpeg','png','gif','webp','bmp','ico','avif','svg']);
@@ -4078,7 +4113,8 @@ function createFileItem(path, displayName) {
   div.className = 'file-item' + (path === state.activeFile ? ' active' : '') + (info.isImage ? ' is-image' : '');
   div.dataset.path = path;
 
-  let iconHtml = `<i class="fab ${info.icon.icon} file-icon" style="color:${info.icon.color}"></i>`;
+  // Prefix class (fas/fab) is now handled natively in FILE_ICONS
+  let iconHtml = `<i class="${info.icon.icon} file-icon" style="color:${info.icon.color}"></i>`;
   if (info.isImage && state.files[path]?.objectUrl) {
     iconHtml = `<img src="${state.files[path].objectUrl}" alt="">`;
   }
@@ -4117,8 +4153,10 @@ function renderTabs() {
     const tab = document.createElement('div');
     tab.className = 'tab' + (path === state.activeFile ? ' active' : '');
     tab.dataset.path = path;
+
+    // Prefix class (fas/fab) is now handled natively in FILE_ICONS
     tab.innerHTML = `
-      <i class="fab ${info.icon.icon} tab-icon" style="color:${info.icon.color}"></i>
+      <i class="${info.icon.icon} tab-icon" style="color:${info.icon.color}"></i>
       <span>${displayName}</span>
       <span class="tab-close" onclick="closeTab('${path}');event.stopPropagation()">
         <i class="fas fa-times"></i>
