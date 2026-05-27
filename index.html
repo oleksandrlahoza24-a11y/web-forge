@@ -128,9 +128,6 @@
             --border-bright: #4c566a;
         }
 
-
-
-
         [data-theme="dracula"] {
             --bg: #0d1117;
             --sidebar: #161b22;
@@ -148,9 +145,6 @@
             --warning: #ffb86c;
             --danger: #ff5555;
         }
-
-
-
 
         [data-theme="pumpkin"] {
             --bg: #100800;
@@ -170,9 +164,6 @@
             --danger: #ef4444;
         }
 
-
-
-
         [data-theme="ocean"] {
             --bg: #020c18;
             --sidebar: #041020;
@@ -190,8 +181,6 @@
             --warning: #fbbf24;
         }
 
-
-
         [data-theme="deepslate"] {
             --bg: linear-gradient(135deg, #2e0032, #72007f);
             --sidebar: #93239A;
@@ -202,9 +191,6 @@
             --text-faint: #530844;
             --accent: radial-gradient(circle, #7000a6, #93009f, #a800d1);
         }
-
-
-
 
         [data-theme="candy"] {
             --bg: #0d0618;
@@ -3044,6 +3030,22 @@
 
             <!-- PREVIEW PANEL -->
             <div class="preview-panel" id="preview-panel">
+                <!-- Floating Editor Window -->
+                <div id="floating-editor-win"
+                    style="display:none; position:absolute; top:20px; left:20px; width:380px; height:320px; background:var(--panel); border:1px solid var(--accent); border-radius:10px; z-index:9999; flex-direction:column; box-shadow:0 15px 50px rgba(0,0,0,0.6); overflow:hidden;">
+                    <div id="floating-editor-header"
+                        style="height:36px; background:var(--panel2); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 12px; cursor:move; user-select:none; flex-shrink:0;">
+                        <i class="fas fa-code" style="color:var(--accent); margin-right:8px;"></i>
+                        <span id="floating-editor-title" style="font-size:12px; font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text)"></span>
+                        <button class="icon-btn" onclick="runCode(); showToast('Preview Refreshed!', 'success')" title="Refresh Preview" style="width:24px; height:24px; margin-right:4px;"><i class="fas fa-sync-alt"></i></button>
+                        <button class="icon-btn" onclick="closeFloatingEditor()" title="Close Editor" style="width:24px; height:24px;"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div id="floating-editor-container" style="flex:1; position:relative;"></div>
+                    <div id="floating-editor-resize"
+                        style="position:absolute; bottom:0; right:0; width:20px; height:20px; cursor:nwse-resize; background:linear-gradient(135deg, transparent 50%, var(--text-dim) 50%); opacity:0.5;">
+                    </div>
+                </div>
+
                 <div class="preview-toolbar">
                     <button class="btn btn-ghost" onclick="refreshPreview()" title="Refresh"><i class="fas fa-sync-alt"></i></button>
                     <div class="preview-url"><i class="fas fa-lock" style="font-size:9px;color:var(--success)"></i>
@@ -3242,6 +3244,14 @@
                         <div style="font-size:10px;color:var(--text-dim)">Scroll preview to top on each run</div>
                     </div>
                     <button class="toggle on" id="toggle-reset-scroll" onclick="toggleResetScroll(this)"></button>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Floating Fullscreen Editor</div>
+                        <div style="font-size:10px;color:var(--text-dim)">Live-edit files while in fullscreen preview
+                        </div>
+                    </div>
+                    <button class="toggle on" id="toggle-floating-editor" onclick="toggleFloatingEditor(this)"></button>
                 </div>
             </div>
 
@@ -3462,11 +3472,11 @@ card.addEventListener('click', () => {
   card.style.borderColor = a;
   card.style.boxShadow = \`0 0 30px \${a}66\`;
   title.style.backgroundImage = \`linear-gradient(90deg, \${a}, \${b})\`;
-  
+
   // Pulse animation
   card.style.transform = 'scale(1.05)';
   setTimeout(() => card.style.transform = '', 150);
-  
+
   console.log('Clicked! Color:', a);
 });
 
@@ -3488,14 +3498,14 @@ console.log('%cWebForge Pro loaded! 🚀', 'color:#6366f1;font-weight:bold;font-
     effects: { glow: false, scanlines: false, crt: false },
     autoRun: false,
     autoRunDelay: 800,
-    consoleCap: true, 
-    layout: 'split', 
-    smartBeta: false, 
-    cursorStyle: 'line', 
-    ligatures: true, 
+    consoleCap: true,
+    layout: 'split',
+    smartBeta: false,
+    cursorStyle: 'line',
+    ligatures: true,
     smoothScroll: true,
-    indentGuides: true, 
-    previewZoom: 100, 
+    indentGuides: true,
+    previewZoom: 100,
     resetScrollOnRun: true
   }
 };
@@ -3520,18 +3530,12 @@ function loadState() {
   } catch { return null; }
 }
 
-
-
-
 window.addEventListener('beforeunload', () => {
   if (editor && state.activeFile && !state.files[state.activeFile]?.isImage) {
     state.files[state.activeFile].content = editor.getValue();
   }
   saveState();
 });
-
-
-
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
@@ -3795,7 +3799,7 @@ const EXT_LANG = {
   yaml: 'yaml', yml: 'yaml',
   xml: 'xml', svg: 'xml',
   sql: 'sql',
-  sh: 'shell', bash: 'shell', zsh: 'shell', 
+  sh: 'shell', bash: 'shell', zsh: 'shell',
   rs: 'rust',
   go: 'go',
   cpp: 'cpp', c: 'cpp', cc: 'cpp', h: 'cpp',
@@ -3849,29 +3853,31 @@ const DragSystem = {
 };
 
 function initFileDrag(e, el, type, path) {
-  // Only register left clicks or touch points, ignore button actions
-  if (e.button !== undefined && e.button !== 0) return;
-  if (e.target.closest('.file-actions') || e.target.closest('button')) return;
+  // Only register left clicks or touch points, ignore button actions
+  if (e.button !== undefined && e.button !== 0) return;
+  if (e.target.closest('.file-actions') || e.target.closest('button')) return;
 
-  DragSystem.startX = e.clientX || (e.touches && e.touches[0].clientX);
-  DragSystem.startY = e.clientY || (e.touches && e.touches[0].clientY);
-  DragSystem.currX = DragSystem.startX; DragSystem.currY = DragSystem.startY;
-  DragSystem.physX = DragSystem.startX; DragSystem.physY = DragSystem.startY;
-  DragSystem.velX = 0; DragSystem.velY = 0;
-  DragSystem.el = el; DragSystem.type = type; DragSystem.path = path;
-  DragSystem.active = false; DragSystem.targetFolder = null;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-  const moveHandler = (moveEv) => {
-    const cx = moveEv.clientX || (moveEv.touches && moveEv.touches[0].clientX);
-    const cy = moveEv.clientY || (moveEv.touches && moveEv.touches[0].clientY);
-    DragSystem.currX = cx; DragSystem.currY = cy;
+  DragSystem.startX = clientX;
+  DragSystem.startY = clientY;
+  DragSystem.currX = DragSystem.startX; DragSystem.currY = DragSystem.startY;
+  DragSystem.velX = 0; DragSystem.velY = 0;
+  DragSystem.el = el; DragSystem.type = type; DragSystem.path = path;
+  DragSystem.active = false; DragSystem.targetFolder = null;
+
+  const moveHandler = (moveEv) => {
+    const cx = moveEv.touches ? moveEv.touches[0].clientX : moveEv.clientX;
+    const cy = moveEv.touches ? moveEv.touches[0].clientY : moveEv.clientY;
+    DragSystem.currX = cx; DragSystem.currY = cy;
 
     // Wait until dragged > 5 pixels to distinguish from a standard click
     if (!DragSystem.active && (Math.abs(cx - DragSystem.startX) > 5 || Math.abs(cy - DragSystem.startY) > 5)) {
       DragSystem.active = true;
       startDragVisuals();
     }
-    
+
     if (DragSystem.active) {
       if (moveEv.cancelable) moveEv.preventDefault();
       updateDropTarget(cx, cy);
@@ -3898,6 +3904,8 @@ function startDragVisuals() {
 
   DragSystem.clone = DragSystem.el.cloneNode(true);
   DragSystem.clone.style.position = 'fixed';
+  DragSystem.clone.style.top = '0px';
+  DragSystem.clone.style.left = '0px';
   DragSystem.clone.style.pointerEvents = 'none';
   DragSystem.clone.style.zIndex = '9999';
   DragSystem.clone.style.width = DragSystem.el.offsetWidth + 'px';
@@ -3910,11 +3918,15 @@ function startDragVisuals() {
 
   const physicsEnabled = state.settings.dragPhysics !== false;
 
+  // Prevent rubber-banding by setting initial physics position directly under the cursor
+  DragSystem.physX = DragSystem.currX - DragSystem.clone.offsetWidth / 2;
+  DragSystem.physY = DragSystem.currY - DragSystem.clone.offsetHeight / 2;
+
   function loop() {
     if (!DragSystem.active) return;
     const tx = DragSystem.currX - DragSystem.clone.offsetWidth / 2;
     const ty = DragSystem.currY - DragSystem.clone.offsetHeight / 2;
-    
+
     if (physicsEnabled) {
       const ax = (tx - DragSystem.physX) * 0.4;
       const ay = (ty - DragSystem.physY) * 0.4;
@@ -3965,10 +3977,10 @@ function endDrag() {
     let targetF = DragSystem.targetFolder.replace(/\\/g, '');
     const fileName = DragSystem.path.split('/').pop();
     const newPath = targetF === 'root' ? fileName : targetF + '/' + fileName;
-    
+
     if (newPath !== DragSystem.path) {
-      if (state.files[newPath]) { 
-        showToast('File already exists there', 'warn'); 
+      if (state.files[newPath]) {
+        showToast('File already exists there', 'warn');
       } else {
         // Move file in data registry
         state.files[newPath] = state.files[DragSystem.path];
@@ -3977,14 +3989,14 @@ function endDrag() {
           editorModels[newPath] = editorModels[DragSystem.path];
           delete editorModels[DragSystem.path];
         }
-        
+
         // Update tabs and active selection
         const tabIdx = state.openTabs.indexOf(DragSystem.path);
         if (tabIdx !== -1) state.openTabs[tabIdx] = newPath;
         if (state.activeFile === DragSystem.path) state.activeFile = newPath;
-        
-        saveState(); 
-        renderFileTree(); 
+
+        saveState();
+        renderFileTree();
         renderTabs();
         if (state.activeFile === newPath) switchFile(newPath);
       }
@@ -4005,7 +4017,7 @@ function renderFileTree() {
     header.className = 'tree-folder-header';
     header.innerHTML = `<i class="fas fa-chevron-right"></i><i class="fas fa-folder" style="color:#fbbf24;font-size:12px"></i> <span>${folderName}</span>`;
     header.onclick = () => folderEl.classList.toggle('open');
-    
+
     const children = document.createElement('div');
     children.className = 'tree-folder-children';
 
@@ -4043,15 +4055,15 @@ function createFileItem(path, displayName) {
       <button onclick="deleteFile('${path}');event.stopPropagation()" title="Delete" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
     </div>
   `;
-  
+
   // Standard click to open
   div.onclick = () => { openTab(path); switchFile(path); };
   div.ondblclick = () => openRenameModal(path);
-  
+
   // Attach unified Mouse + iPad drag physics system
   div.addEventListener('mousedown', (e) => initFileDrag(e, div, 'file', path));
   div.addEventListener('touchstart', (e) => initFileDrag(e, div, 'file', path), { passive: false });
-  
+
   return div;
 }
 
@@ -4150,6 +4162,13 @@ function switchFile(path) {
     }
     editor.setModel(editorModels[path]);
     editor.focus();
+
+    // Sync the floating editor if it's open
+    if (window.floatingEditorInst && document.getElementById('floating-editor-win').style.display !== 'none') {
+        floatingEditorInst.setModel(editorModels[path]);
+        document.getElementById('floating-editor-title').textContent = path.split('/').pop();
+    }
+
     // Remove modified dot
     const tab = document.querySelector(`.tab[data-path="${path}"]`);
     if (tab) tab.classList.remove('modified');
@@ -4395,20 +4414,14 @@ function autoFixCode() {
   if (!file) { showToast('No file open', 'warn'); return; }
   if (file.isImage) { showToast('Cannot fix image files', 'warn'); return; }
 
-
-
-
   let code = editor ? editor.getValue() : file.content;
   const lang = file.language;
   let fixes = 0;
   const log = [];
 
-
-
-
   if (lang === 'html') {
     // Safely fix missing alt attributes on img tags
-    const newCodeImg = code.replace(/<img([^>]*)>/gi, (m, inner) => {
+    const newCodeImg = code.replace(/<img([^ alt="">]*)>/gi, (m, inner) => {
       if (!/\balt\s*=/i.test(inner)) {
         fixes++;
         let clean = inner;
@@ -4423,11 +4436,8 @@ function autoFixCode() {
     });
     if (newCodeImg !== code) { code = newCodeImg; log.push('Added missing alt=""'); }
 
-
-
-
-    // Safely fix missing lang on <html>
-    const newCodeHtml = code.replace(/<html([^>]*)>/gi, (m, inner) => {
+    // Safely fix missing lang on <html lang="en">
+    const newCodeHtml = code.replace(/<html([^ lang="en">]*)>/gi, (m, inner) => {
       if (!/\blang\s*=/i.test(inner)) {
         fixes++;
         return `<html${inner} lang="en">`;
@@ -4435,9 +4445,6 @@ function autoFixCode() {
       return m;
     });
     if (newCodeHtml !== code) { code = newCodeHtml; log.push('Added lang="en"'); }
-
-
-
 
     // Safely fix missing meta tags (only injects if <head> is present)
     if (/<head[^>]*>/i.test(code)) {
@@ -4452,9 +4459,6 @@ function autoFixCode() {
     }
   }
 
-
-
-
   if (lang === 'css') {
     // Safely fix missing semicolons before closing brace in CSS ONLY
     const missingSemi = code.replace(/([^;{}\s\/*])\s*\n(\s*})/g, (m, last, close) => { 
@@ -4464,9 +4468,6 @@ function autoFixCode() {
     if (missingSemi !== code) { code = missingSemi; log.push('Added CSS semicolons'); }
   }
 
-
-
-
   // Universal Safe Fixes
   // 1. Remove trailing whitespace
   const noTrailAll = code.replace(/[ \t]+$/gm, '');
@@ -4474,33 +4475,21 @@ function autoFixCode() {
     fixes++; code = noTrailAll; log.push('Removed trailing whitespace');
   }
 
-
-
-
   // 2. Remove excessive empty lines (more than 2 consecutive blank lines)
   const noExcessEmpty = code.replace(/\n{3,}/g, '\n\n');
   if (noExcessEmpty !== code) {
     fixes++; code = noExcessEmpty; log.push('Cleaned up blank lines');
   }
 
-
-
-
   // 3. Ensure trailing newline at EOF
   if (code && !code.endsWith('\n')) {
     fixes++; code += '\n'; log.push('Added EOF newline');
   }
 
-
-
-
   if (fixes === 0) {
     showToast('✅ No issues found — code looks clean!', 'success');
     return;
   }
-
-
-
 
   if (editor) {
     const pos = editor.getPosition(); // Retain scroll & cursor position
@@ -4550,30 +4539,42 @@ const divider = document.getElementById('split-divider');
 const previewPanel = document.getElementById('preview-panel');
 let isDragging = false, dragStartX = 0, dragStartW = 0;
 
-divider.addEventListener('mousedown', e => {
+const startSplitDrag = (e) => {
   isDragging = true;
-  dragStartX = e.clientX;
+  dragStartX = e.touches ? e.touches[0].clientX : e.clientX;
   dragStartW = previewPanel.offsetWidth;
   divider.classList.add('dragging');
   document.body.style.userSelect = 'none';
   document.body.style.cursor = 'col-resize';
-});
+};
 
-document.addEventListener('mousemove', e => {
+const doSplitDrag = (e) => {
   if (!isDragging) return;
-  const delta = dragStartX - e.clientX;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const delta = dragStartX - clientX;
   const newW = Math.max(200, Math.min(window.innerWidth * 0.75, dragStartW + delta));
   previewPanel.style.width = newW + 'px';
-});
+};
 
-document.addEventListener('mouseup', () => {
+const endSplitDrag = () => {
   if (isDragging) {
     isDragging = false;
     divider.classList.remove('dragging');
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
   }
-});
+};
+
+// Bind Mouse Events
+divider.addEventListener('mousedown', startSplitDrag);
+document.addEventListener('mousemove', doSplitDrag);
+document.addEventListener('mouseup', endSplitDrag);
+
+// Bind Touch Events for iPad/Mobile
+divider.addEventListener('touchstart', startSplitDrag, { passive: true });
+document.addEventListener('touchmove', doSplitDrag, { passive: true });
+document.addEventListener('touchend', endSplitDrag);
+document.addEventListener('touchcancel', endSplitDrag);
 
 // ═══════════════════════════════════════
 // DEVICE SIMULATION
@@ -4627,8 +4628,8 @@ const THEMES = {
   matrix:    { bg:'#000300', sidebar:'#000500', accent:'#00ff41', label:'Matrix' },
   light:     { bg:'#f0f0f5', sidebar:'#e4e4ec', accent:'#6366f1', label:'Light' },
   deepslate: { bg:'#B218FF', sidebar:'#A219FF', accent:'#C504FF', label:'Deepslate' },
-  candy:     { bg:'#0d0618', sidebar:'#120820', accent:'#f472b6', label:'Candy' }, 
-  neon:      { bg:'#020510', sidebar:'#030818', accent:'#00f5ff', label:'Neon City' }, 
+  candy:     { bg:'#0d0618', sidebar:'#120820', accent:'#f472b6', label:'Candy' },
+  neon:      { bg:'#020510', sidebar:'#030818', accent:'#00f5ff', label:'Neon City' },
   luxe:      { bg:'#080500', sidebar:'#0d0700', accent:'#d4a017', label:'✦ Luxe' },
 };
 
@@ -4684,6 +4685,7 @@ function applySettings() {
   const pzs = document.getElementById('preview-zoom-slider');
   if (pzs) { pzs.value = s.previewZoom || 100; document.getElementById('preview-zoom-val').textContent = (s.previewZoom || 100) + '%'; }
   updateToggle('toggle-reset-scroll', s.resetScrollOnRun !== false);
+  updateToggle('toggle-floating-editor', s.floatingEditor !== false);
 }
 
 function updateToggle(id, val) {
@@ -4983,6 +4985,12 @@ function toggleResetScroll(btn) {
   saveState();
 }
 
+function toggleFloatingEditor(btn) {
+  btn.classList.toggle('on');
+  state.settings.floatingEditor = btn.classList.contains('on');
+  saveState();
+}
+
 function updateAutoRunBtn() {
   const btn = document.getElementById('autorun-btn');
   if (btn) {
@@ -5193,22 +5201,22 @@ function tbxPixelArt() {
             <option value="64">64×64</option>
           </select>
         </label>
-        
+
         <div style="width:1px;height:18px;background:var(--border)"></div>
-        
+
         <input type="color" id="tbx-px-color" value="#6366f1" style="width:26px;height:26px;border:none;border-radius:4px;cursor:pointer;background:transparent;padding:0">
-        
+
         <div style="display:flex;background:var(--panel);border:1px solid var(--border-bright);border-radius:6px;overflow:hidden">
             <button onclick="tbxPxSetTool('draw')" id="tbx-px-tool-draw" class="btn btn-primary" style="height:26px;border-radius:0;border:none;padding:0 12px;font-size:11px" title="Draw"><i class="fas fa-pen"></i></button>
             <button onclick="tbxPxSetTool('erase')" id="tbx-px-tool-erase" class="btn btn-ghost" style="height:26px;border-radius:0;border:none;padding:0 12px;font-size:11px" title="Erase"><i class="fas fa-eraser"></i></button>
             <button onclick="tbxPxSetTool('fill')" id="tbx-px-tool-fill" class="btn btn-ghost" style="height:26px;border-radius:0;border:none;padding:0 12px;font-size:11px" title="Fill"><i class="fas fa-fill-drip"></i></button>
             <button onclick="tbxPxSetTool('picker')" id="tbx-px-tool-picker" class="btn btn-ghost" style="height:26px;border-radius:0;border:none;padding:0 12px;font-size:11px" title="Eyedropper"><i class="fas fa-eye-dropper"></i></button>
         </div>
-        
+
         <div style="width:1px;height:18px;background:var(--border)"></div>
-        
+
         <button onclick="tbxPxToggleGrid()" class="btn btn-primary" id="tbx-px-grid-btn" style="height:26px;padding:0 10px;font-size:11px"><i class="fas fa-border-all"></i> Grid</button>
-        
+
         <button onclick="tbxPxClear()" class="btn btn-ghost" style="height:26px;padding:0 10px;font-size:11px;margin-left:auto;color:var(--danger)"><i class="fas fa-trash"></i> Clear</button>
       </div>
 
@@ -5293,25 +5301,25 @@ function tbxPxRender() {
   const wrapH = 348;
   const cellMax = Math.max(4, Math.floor(Math.min(wrapW, wrapH) / size));
   const cell = cellMax;
-  
+
   c.width = size * cell;
   c.height = size * cell;
   c.style.width = (size * cell) + 'px';
   c.style.height = (size * cell) + 'px';
-  
+
   const ctx = c.getContext('2d');
   ctx.clearRect(0, 0, c.width, c.height);
-  
+
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const key = x + ',' + y;
-      
+
       // Draw Pixel Color
       if (window._tbxPx.pixels[key]) {
         ctx.fillStyle = window._tbxPx.pixels[key];
         ctx.fillRect(x * cell, y * cell, cell, cell);
       }
-      
+
       // Draw Overlay Grid
       if (window._tbxPx.showGrid) {
         ctx.strokeStyle = 'rgba(128,128,128,0.2)';
@@ -5319,7 +5327,7 @@ function tbxPxRender() {
       }
     }
   }
-  
+
   c._cell = cell;
   tbxPxBindEvents(c);
 }
@@ -5332,14 +5340,14 @@ function tbxPxBindEvents(c) {
     const cell = c._cell;
     return [Math.floor((clientX - r.left) / cell), Math.floor((clientY - r.top) / cell)];
   };
-  
+
   const paint = e => {
     e.preventDefault();
     const [x, y] = getXY(e);
     const size = window._tbxPx.size;
     if (x < 0 || y < 0 || x >= size || y >= size) return;
     const key = x + ',' + y;
-    
+
     if (window._tbxPx.tool === 'picker') {
         if (window._tbxPx.pixels[key]) {
             document.getElementById('tbx-px-color').value = window._tbxPx.pixels[key];
@@ -5372,7 +5380,7 @@ function tbxPxBindEvents(c) {
     }
     tbxPxRender();
   };
-  
+
   c.onmousedown = e => { window._tbxPx.painting = true; paint(e); };
   c.onmousemove = e => { if (window._tbxPx.painting && window._tbxPx.tool !== 'picker') paint(e); };
   c.onmouseup = () => { window._tbxPx.painting = false; };
@@ -5440,7 +5448,7 @@ function tbxPxExportCode() {
 
       // Format palette
       const paletteStr = paletteArr.map(c => c ? `'${c}'` : 'null').join(', ');
-      
+
       // Format 2D Array layout
       const padLen = (pIndex - 1).toString().length;
       const gridRows = [];
@@ -5471,7 +5479,7 @@ function tbxPxExportDataURL() {
   const offscreen = document.createElement('canvas');
   offscreen.width = size; offscreen.height = size;
   const ctx = offscreen.getContext('2d');
-  
+
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const col = window._tbxPx.pixels[x + ',' + y];
@@ -5506,7 +5514,7 @@ function tbxPxInjectFile() {
   let ext = format === 'grid' ? 'js' : format;
   let lang = format === 'grid' ? 'javascript' : format === 'svg' ? 'xml' : 'css';
   let name = 'pixel-art.' + ext;
-  
+
   // Make sure we don't overwrite blindly
   let i = 1;
   let finalName = name;
@@ -5517,11 +5525,11 @@ function tbxPxInjectFile() {
 
   state.files[finalName] = { content: code, language: lang };
   if (!state.openTabs.includes(finalName)) state.openTabs.push(finalName);
-  
-  renderFileTree(); 
-  renderTabs(); 
+
+  renderFileTree();
+  renderTabs();
   switchFile(finalName);
-  
+
   document.getElementById('tbx-modal-overlay')?.remove();
   showToast('Saved as ' + finalName + ' ✓', 'success');
   saveState();
@@ -6351,6 +6359,108 @@ function toggleFullscreen() {
   if (!document.fullscreenElement) zone.requestFullscreen?.();
   else document.exitFullscreen?.();
 }
+
+// ═══════════════════════════════════════
+// FLOATING FULLSCREEN EDITOR LOGIC
+// ═══════════════════════════════════════
+window.floatingEditorInst = null;
+
+function openFloatingEditor() {
+    const fwWin = document.getElementById('floating-editor-win');
+    fwWin.style.display = 'flex';
+    document.getElementById('floating-editor-title').textContent = state.activeFile ? state.activeFile.split('/').pop() : 'Editor';
+
+    if (!window.floatingEditorInst && window.monaco) {
+        window.floatingEditorInst = monaco.editor.create(document.getElementById('floating-editor-container'), {
+            theme: state.settings.editorTheme === 'vs-dark' ? 'webforge-dark' : state.settings.editorTheme,
+            automaticLayout: true,
+            fontSize: state.settings.fontSize,
+            fontFamily: "'JetBrains Mono', monospace",
+            minimap: { enabled: false },
+            wordWrap: state.settings.wordWrap ? 'on' : 'off',
+            lineNumbers: 'off',
+            padding: { top: 8, bottom: 8 },
+        });
+    }
+    if (window.floatingEditorInst && state.activeFile && editorModels[state.activeFile]) {
+        window.floatingEditorInst.setModel(editorModels[state.activeFile]);
+    }
+}
+
+function closeFloatingEditor() {
+    document.getElementById('floating-editor-win').style.display = 'none';
+}
+
+// Hook into fullscreen events to auto-show/hide
+document.addEventListener('fullscreenchange', () => {
+    const isFull = !!document.fullscreenElement;
+    if (isFull && state.settings.floatingEditor !== false) {
+        openFloatingEditor();
+    } else {
+        closeFloatingEditor();
+    }
+});
+
+// Drag and Resize Physics for Floating Editor
+let fwDragging = false, fwResizing = false;
+let fwStartX = 0, fwStartY = 0, fwStartW = 0, fwStartH = 0, fwStartTop = 0, fwStartLeft = 0;
+
+const fwDragStart = (e) => {
+    if (e.target.closest('button')) return; // Ignore button clicks
+    e.stopPropagation();
+    fwDragging = true;
+    fwStartX = e.touches ? e.touches[0].clientX : e.clientX;
+    fwStartY = e.touches ? e.touches[0].clientY : e.clientY;
+    const fwWin = document.getElementById('floating-editor-win');
+    fwStartTop = parseInt(window.getComputedStyle(fwWin).top || 20);
+    fwStartLeft = parseInt(window.getComputedStyle(fwWin).left || 20);
+};
+
+const fwResizeStart = (e) => {
+    e.stopPropagation(); e.preventDefault();
+    fwResizing = true;
+    fwStartX = e.touches ? e.touches[0].clientX : e.clientX;
+    fwStartY = e.touches ? e.touches[0].clientY : e.clientY;
+    const fwWin = document.getElementById('floating-editor-win');
+    fwStartW = fwWin.offsetWidth;
+    fwStartH = fwWin.offsetHeight;
+};
+
+const fwMove = (e) => {
+    if (!fwDragging && !fwResizing) return;
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const fwWin = document.getElementById('floating-editor-win');
+
+    if (fwDragging) {
+        fwWin.style.left = Math.max(0, fwStartLeft + (cx - fwStartX)) + 'px';
+        fwWin.style.top = Math.max(0, fwStartTop + (cy - fwStartY)) + 'px';
+    } else if (fwResizing) {
+        fwWin.style.width = Math.max(200, fwStartW + (cx - fwStartX)) + 'px';
+        fwWin.style.height = Math.max(150, fwStartH + (cy - fwStartY)) + 'px';
+        if (window.floatingEditorInst) window.floatingEditorInst.layout();
+    }
+};
+
+const fwEnd = () => { fwDragging = false; fwResizing = false; };
+
+// Attach Events
+document.addEventListener('DOMContentLoaded', () => {
+    const fwHeader = document.getElementById('floating-editor-header');
+    const fwResize = document.getElementById('floating-editor-resize');
+
+    fwHeader.addEventListener('mousedown', fwDragStart);
+    fwHeader.addEventListener('touchstart', fwDragStart, { passive: false });
+
+    fwResize.addEventListener('mousedown', fwResizeStart);
+    fwResize.addEventListener('touchstart', fwResizeStart, { passive: false });
+
+    document.addEventListener('mousemove', fwMove);
+    document.addEventListener('touchmove', fwMove, { passive: false });
+
+    document.addEventListener('mouseup', fwEnd);
+    document.addEventListener('touchend', fwEnd);
+});
 
 // ═══════════════════════════════════════
 // EXPORT
@@ -7606,7 +7716,6 @@ function pluginCreate() {
   WebForge.notify('Colour Wheel plugin loaded! Check View menu 🎨', 'success');
 })();
 
-
 // EXAMPLE 2: Register a custom theme
 // WebForge.registerTheme('Grape', {
 //   '--bg': '#0d0a1a',
@@ -7621,7 +7730,6 @@ function pluginCreate() {
 //   '--border': '#221a44',
 //   '--border-bright': '#332866',
 // });
-
 
 // EXAMPLE 3: Add Lua language with autocomplete
 // WebForge.registerLanguage('lua', 'Lua', ['.lua'], [
